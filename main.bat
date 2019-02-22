@@ -1,0 +1,1 @@
+C:\workspace\Python\Python36\python.exe C:\STUDY\Discordbot\main.py %*
