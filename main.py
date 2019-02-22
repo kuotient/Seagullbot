@@ -101,7 +101,7 @@ async def on_message(message):
             await client.send_message(message.channel, embed=embed)            
         else:
             embed = discord.Embed(title='최근 전적',
-                                  description='[OP.GG](http://www.op.gg/summoner/userName='+ msg.content.replace(" ", "") +')',
+                                  description='[OP.GG](http://www.op.gg/summoner/userName=' + msg.content.replace(" ", "") + ')',
                                   color=0x00ff00)
             embed.set_thumbnail(url="http://opgg-static.akamaized.net/images/profile_icons/profileIcon27.jpg")
             await client.send_message(message.channel, embed=embed)
@@ -123,7 +123,7 @@ async def on_message(message):
                 embed.set_thumbnail(url=lol.find_champion_img(msg.content))
                 await client.send_message(message.channel, embed=embed)
             elif temp == 0:
-                embed = discord.Embed(title= msg.content + ' is not playing right now. :zzz:',
+                embed = discord.Embed(title=msg.content + ' is not playing right now. :zzz:',
                                       description='다른 사람을 검색하시려면 !롤현재',
                                       color=0xed2902)
                 await client.send_message(message.channel, embed=embed)
