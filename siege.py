@@ -1,7 +1,6 @@
 import urllib.request
 from bs4 import BeautifulSoup
 import json
-import r6sapi as api
 import requests
 import prettytable
 
@@ -10,7 +9,7 @@ def search(id):
     bs = BeautifulSoup(res.text, 'html.parser')
     link = bs.select('#__layout > div > div.search-results__wrapper > div > div > div.card > div > div > div > a')
     if len(link) == 0:
-        return None
+        return '플레이어를 찾을수 없습니다.'
     href = link[0].get('href')
     res = requests.get('https://r6stats.com' + href, headers={'User-Agent': 'Mozilla/5.0'})
     bs = BeautifulSoup(res.text, 'html.parser')

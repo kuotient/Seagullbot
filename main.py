@@ -1,16 +1,19 @@
 import leagueoflegends as lol
 import urf
 import discord
+import seagullbot
 import asyncio
 import siege
 
-client = discord.Client()
+#client = discord.Client()
+client = seagullbot.Client()
 
 command_list = [
     ['!도움', '명령어 리스트를 보여줍니다', '사용법: !도움'],
     ['!롤전적', '롤 전적을 보여줍니다', '사용법: !롤전적'],
     ['!롤현재', '현재 플레이중인 롤 정보를 보여줍니다', '사용법: !롤현재'],
-    ['!우르프', '우르프 전적를 보여줍니다', '사용법: !우르프']
+    ['!우르프', '우르프 전적를 보여줍니다', '사용법: !우르프'],
+    ['!레식전적', '레인보우식스 시즈 전적를 보여줍니다', '사용법: !우르프'],
 ]
 
 @client.event
@@ -26,15 +29,34 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!도움'):
+    for check in command_list:
+        if check[0] in message.content:
+            client.log_recv_message(message)
+            break
+
+#########   봇 기본 명령어     ##########################################################################
+    if message.content.startswith('!도움') or message.content.startswith('!help'):
         msg = ''
         for i in range(0, len(command_list)):
             msg += '**' + command_list[i][0] + '**\n\t' + command_list[i][1] + '\n\t_' + command_list[i][2] + '_\n\n'
         await client.send_message(message.channel, msg)
 
-    if message.content.startswith('!test'):
+    elif message.content.startswith('!test'):
         await client.send_message(message.channel, 'test!')
-    
+
+    elif message.content.startswith('!정리') or message.content.startswith('!clear'):
+        mgs = []
+        async for x in client.logs_from(message.channel, limit=1000):
+            mgs.append(x)
+        await client.delete_messages(mgs)
+        #await client.clear_messages()
+
+    elif message.content.startswith('!모두정리') or message.content.startswith('!clearall'):
+        await client.clear_all_messages()
+
+##########################################################################################################
+
+#########   롤 관련 명령어     ##########################################################################
     elif message.content.startswith('!롤전적'):
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
@@ -75,6 +97,9 @@ async def on_message(message):
                                       color=0xed2902)
                 await client.send_message(message.channel, embed=embed)
 
+##########################################################################################################
+
+#########   우르프 관련 명령어     ######################################################################
     elif message.content.startswith('!우르프'):
         await client.send_message(message.channel, '***:zap: URF TIER LIST :zap:** presented by* op.gg')
         (champions, winrate, kda) = urf.urf_rank()
@@ -92,6 +117,9 @@ async def on_message(message):
 
         await client.send_message(message.channel, s)
 
+##########################################################################################################
+
+#########   레식 관련 명령어     ########################################################################
     elif message.content.startswith('!레식전적'):
         if len(message.content.split(' ')) == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
@@ -109,10 +137,9 @@ async def on_message(message):
             searching = await client.send_message(message.channel, '검색중입니다..')
 
         result = siege.search(player_id)
-        if result is None:
-            result = '플레이어를 찾을수 없습니다.'
-
         await client.edit_message(searching, result)
+
+##########################################################################################################
 
 #client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
 client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
