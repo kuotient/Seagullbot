@@ -7,19 +7,16 @@ send_msg_log = []
 
 class Client(discord.Client):
 #########   오버라이딩     ##############################################################################
-    @asyncio.coroutine
     def send_message(self, destination, content=None, *, tts=False, embed=None):
         message = super(Client, self).send_message(destination, content=content, tts=tts, embed=embed)
         send_msg_log.append(message)
         return message
 
-    @asyncio.coroutine
     def wait_for_message(self, timeout=None, *, author=None, channel=None, content=None, check=None):
         message = super(Client, self).wait_for_message(timeout=timeout, author=author, channel=channel, content=content, check=check)
         recv_msg_log.append(message)
         return message
 
-    @asyncio.coroutine
     def edit_message(self, message, new_content=None, *, embed=None):
         edt_message = super(Client, self).edit_message(message=message, new_content=new_content, embed=embed)
         if message in recv_msg_log:

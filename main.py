@@ -5,16 +5,39 @@ import seagullbot
 import asyncio
 import siege
 
-#client = discord.Client()
-client = seagullbot.Client()
+client = discord.Client()
+#client = seagullbot.Client()
 
-command_list = [
-    ['!도움', '명령어 리스트를 보여줍니다', '사용법: !도움'],
-    ['!롤전적', '롤 전적을 보여줍니다', '사용법: !롤전적'],
-    ['!롤현재', '현재 플레이중인 롤 정보를 보여줍니다', '사용법: !롤현재'],
-    ['!우르프', '우르프 전적를 보여줍니다', '사용법: !우르프'],
-    ['!레식전적', '레인보우식스 시즈 전적를 보여줍니다', '사용법: !우르프'],
+#########   명령어 상수 정의     ##########################################################################
+COMMAND_HELP1 = '!도움'
+COMMAND_HELP2 = '!help'
+COMMAND_LOLSTAT = '!롤전적'
+COMMAND_LOLNOW = '!롤현재'
+COMMAND_URF = '!우르프'
+COMMAND_R6STAT = '!레식전적'
+COMMAND_CLEAR1 = '!정리'
+COMMAND_CLEAR2 = '!clear'
+
+COMMAND_LIST = [
+    COMMAND_HELP1,
+    COMMAND_HELP2,
+    COMMAND_LOLSTAT,
+    COMMAND_LOLNOW,
+    COMMAND_URF,
+    COMMAND_R6STAT,
+    COMMAND_CLEAR1,
+    COMMAND_CLEAR2
 ]
+
+HELP_LIST = [
+    [COMMAND_HELP1, '명령어 리스트를 보여줍니다', '사용법: ' + COMMAND_HELP1],
+    [COMMAND_LOLSTAT, '롤 전적을 보여줍니다', '사용법: ' + COMMAND_LOLSTAT],
+    [COMMAND_LOLNOW, '현재 플레이중인 롤 정보를 보여줍니다', '사용법: ' + COMMAND_LOLNOW],
+    [COMMAND_URF, '우르프 전적를 보여줍니다', '사용법: ' + COMMAND_URF],
+    [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다', '사용법: ' + COMMAND_R6STAT + ' (레식 아이디)'],
+]
+
+##########################################################################################################
 
 @client.event
 async def on_ready():
@@ -29,35 +52,42 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    for check in command_list:
-        if check[0] in message.content:
-            client.log_recv_message(message)
-            break
-
 #########   봇 기본 명령어     ##########################################################################
-    if message.content.startswith('!도움') or message.content.startswith('!help'):
-        msg = ''
-        for i in range(0, len(command_list)):
-            msg += '**' + command_list[i][0] + '**\n\t' + command_list[i][1] + '\n\t_' + command_list[i][2] + '_\n\n'
+    # !도움
+    if message.content.startswith(COMMAND_HELP1) or message.content.startswith(COMMAND_HELP2):
+        msg = '__**() : 생략가능, <> : 필수입력입니다.**__\n'
+        for i in range(0, len(HELP_LIST)):
+            msg += '**' + HELP_LIST[i][0] + '**\n\t' + HELP_LIST[i][1] + '\n\t_' + HELP_LIST[i][2] + '_\n\n'
         await client.send_message(message.channel, msg)
 
     elif message.content.startswith('!test'):
         await client.send_message(message.channel, 'test!')
 
-    elif message.content.startswith('!정리') or message.content.startswith('!clear'):
-        mgs = []
-        async for x in client.logs_from(message.channel, limit=1000):
-            mgs.append(x)
-        await client.delete_messages(mgs)
-        #await client.clear_messages()
+    # !정리
+    elif message.content.startswith(COMMAND_CLEAR1) or message.content.startswith(COMMAND_CLEAR2):
+        msg_list = []
+        async for x in client.logs_from(message.channel, limit=100):
+            flag = 0
+            for command in COMMAND_LIST:
+                if x.content.startswith(command):
+                    flag = 1
+                    break
 
-    elif message.content.startswith('!모두정리') or message.content.startswith('!clearall'):
-        await client.clear_all_messages()
+            if x.author.display_name == client.user.name or flag == 1:
+                msg_list.append(x)
+                if len(msg_list) >= 100:
+                    break
+
+        for i in range(0, len(msg_list)):
+            await client.delete_message(msg_list[i])
+
+        #await client.clear_messages()
 
 ##########################################################################################################
 
 #########   롤 관련 명령어     ##########################################################################
-    elif message.content.startswith('!롤전적'):
+    # !롤전적
+    elif message.content.startswith(COMMAND_LOLSTAT):
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
@@ -75,8 +105,9 @@ async def on_message(message):
                                   color=0x00ff00)
             embed.set_thumbnail(url="http://opgg-static.akamaized.net/images/profile_icons/profileIcon27.jpg")
             await client.send_message(message.channel, embed=embed)
-    
-    elif message.content.startswith('!롤현재'):
+
+    # !롤현재
+    elif message.content.startswith(COMMAND_LOLNOW):
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
@@ -100,7 +131,8 @@ async def on_message(message):
 ##########################################################################################################
 
 #########   우르프 관련 명령어     ######################################################################
-    elif message.content.startswith('!우르프'):
+    # !우르프
+    elif message.content.startswith(COMMAND_URF):
         await client.send_message(message.channel, '***:zap: URF TIER LIST :zap:** presented by* op.gg')
         (champions, winrate, kda) = urf.urf_rank()
         s = "```CHAMPION                                 WINRATE      KDA\n\n"
@@ -120,7 +152,8 @@ async def on_message(message):
 ##########################################################################################################
 
 #########   레식 관련 명령어     ########################################################################
-    elif message.content.startswith('!레식전적'):
+    # !레식전적
+    elif message.content.startswith(COMMAND_R6STAT):
         if len(message.content.split(' ')) == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
             msg = await client.wait_for_message(timeout=15.0, author=message.author)
