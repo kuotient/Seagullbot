@@ -6,6 +6,7 @@ import asyncio
 import siege
 import apexlegends as apex
 import nacl
+import config
 
 client = discord.Client()
 ###################### 버전 ################################
@@ -297,5 +298,4 @@ async def on_message(message):
 
 ##########################################################################################################
 
-client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-#client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
+client.run(config.DISCORD_TOKEN)
