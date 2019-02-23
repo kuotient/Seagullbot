@@ -1,7 +1,6 @@
 import leagueoflegends as lol
 import urf
 import discord
-import seagullbot
 import asyncio
 import siege
 
@@ -15,6 +14,7 @@ COMMAND_LOLSTAT = '!롤전적'
 COMMAND_LOLNOW = '!롤현재'
 COMMAND_URF = '!우르프'
 COMMAND_R6STAT = '!레식전적'
+COMMAND_R6OPER = '!레식오퍼'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
 
@@ -25,6 +25,7 @@ COMMAND_LIST = [
     COMMAND_LOLNOW,
     COMMAND_URF,
     COMMAND_R6STAT,
+    COMMAND_R6OPER,
     COMMAND_CLEAR1,
     COMMAND_CLEAR2
 ]
@@ -163,12 +164,17 @@ async def on_message(message):
         if argc == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
             msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            if msg is None:
+                await client.delete_message(searching)
+                await client.send_message(message.channel, '입력시간 초과입니다.')
+                return
+
             player_id = msg.content
             await client.delete_message(msg)
 
             if player_id is None:
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
                 await client.delete_message(searching)
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
                 return
             searching = await client.edit_message(searching, '검색중입니다..')
         else:
@@ -178,7 +184,34 @@ async def on_message(message):
         result = siege.search(player_id)
         await client.edit_message(searching, result)
 
+    # !레식오퍼
+    elif argv[0] == COMMAND_R6OPER:
+        if argc == 1:
+            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            if msg is None:
+                await client.delete_message(searching)
+                await client.send_message(message.channel, '입력시간 초과입니다.')
+                return
+
+            player_id = msg.content
+            await client.delete_message(msg)
+
+            if player_id is None:
+                await client.delete_message(searching)
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                return
+            searching = await client.edit_message(searching, '검색중입니다..')
+        else:
+            player_id = message.content.split(' ')[1]
+            searching = await client.send_message(message.channel, '검색중입니다..')
+
+        result_list = siege.search_operator(player_id)
+        await client.delete_message(searching)
+        for result in result_list:
+            await client.send_message(message.channel, result)
+
 ##########################################################################################################
 
-client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-#client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
+#client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
+client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
