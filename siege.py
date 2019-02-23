@@ -349,42 +349,8 @@ def search_operator(id):
         message += '```'
         ret_list.append(message)
         return ret_list
-                # message += operator_dic[operator].ljust(6)
-            # message += operator_dic[operator].ljust(6)
-            # message += operator_dic[operator].ljust(6)
-            # message += operator_dic[operator].ljust(6)
-
-
-
-        # message += "".ljust(20) + "총괄".ljust(13) + "\n\n"
-        # message += "플레이한 시간".ljust(15) + overall["playtime"].ljust(13) + "\n"
-        # message += "플레이한 매치".ljust(15) + overall["playmatch"].ljust(13) + "\n"
-        # message += "매치당 사살 수".ljust(15) + overall["k/m"].ljust(13) + "\n"
-        # message += "사살".ljust(18) + overall["kills"].ljust(13) + "\n"
-        # message += "사망".ljust(18) + overall["deaths"].ljust(13) + "\n"
-        # message += "킬뎃".ljust(18) + overall["kd"].ljust(13) + "\n"
-        # message += "승리".ljust(18) + overall["wins"].ljust(13) + "\n"
-        # message += "패배".ljust(18) + overall["losses"].ljust(13) + "\n"
-        # message += "승/패".ljust(18) + overall["wlr"].ljust(13) + "\n"
-        # message += "눈먼 사살".ljust(16) + overall["blind_kills"].ljust(13) + "\n"
-        # message += "근접 사살".ljust(16) + overall["melee_kills"].ljust(13) + "\n"
-        # message += "관통 사살".ljust(16) + overall["penet_kills"].ljust(13) + "\n"
-        # message += "헤드샷".ljust(17) + overall["headshot"].ljust(13) + "\n"
-        # message += "헤드샷 비율".ljust(15) + overall["head_ratio"].ljust(13) + "\n"
-        # message += "선호 오퍼".ljust(16) + overall["fav_oper"].ljust(13) + "\n\n"
-        # message += "".ljust(47, '-') + '\n\n'
-        # message += "".ljust(20) + "캐주얼".ljust(13) + "랭크".ljust(13) + "\n\n"
-        # message += "사살".ljust(18) + casual["kills"].ljust(16) + ranked["kills"].ljust(13) + "\n"
-        # message += "사망".ljust(18) + casual["deaths"].ljust(16) + ranked["deaths"].ljust(13) + "\n"
-        # message += "킬뎃".ljust(18) + casual["kd"].ljust(16) + ranked["kd"].ljust(13) + "\n"
-        # message += "승리".ljust(18) + casual["wins"].ljust(16) + ranked["wins"].ljust(13) + "\n"
-        # message += "패배".ljust(18) + casual["losses"].ljust(16) + ranked["losses"].ljust(13) + "\n"
-        # message += "승/패".ljust(18) + casual["wlr"].ljust(16) + ranked["wlr"].ljust(13) + "\n"
-        # message += '```'
-        #return message
 
     except Exception as ex:
         print(ex)
         return '처리 중 오류가 발생하였습니다.'
-
 
