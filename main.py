@@ -214,5 +214,4 @@ async def on_message(message):
 
 ##########################################################################################################
 
-#client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
 client.run(config.DISCORD_TOKEN)
