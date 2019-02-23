@@ -1,17 +1,19 @@
 import leagueoflegends as lol
 import urf
 import discord
+from discord.voice_client import VoiceClient
 import asyncio
 import siege
 import apexlegends as apex
+import nacl
 
 client = discord.Client()
-#client = seagullbot.Client()
 ###################### 버전 ################################
-VERSION = 'ver 0.3'
+VERSION = 'ver 0.37'
 ############################################################
 
 #########   명령어 상수 정의     ##########################################################################
+COMMAND_REACTION = '!리액션'
 COMMAND_HELP1 = '!도움'
 COMMAND_HELP2 = '!help'
 COMMAND_LOLSTAT = '!롤전적'
@@ -88,8 +90,6 @@ async def on_message(message):
         for i in range(0, len(msg_list)):
             await client.delete_message(msg_list[i])
 
-        #await client.clear_messages()
-
 ##########################################################################################################
 
 #########   롤 관련 명령어     ##########################################################################
@@ -126,10 +126,12 @@ async def on_message(message):
                 await client.delete_message(searching)
                 return
             else:
-                searching = await client.edit_message(searching, '검색중입니다..')
+                searching = await client.edit_message(searching, '검색중입니다...')
+                await client.send_typing(message.channel)
         else:
             player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다..')
+            searching = await client.send_message(message.channel, '검색중입니다...')
+            await client.send_typing(message.channel)
 
         temp = lol.search(player_id)
         if temp == 1:
@@ -182,10 +184,12 @@ async def on_message(message):
                 await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
                 await client.delete_message(searching)
                 return
-            searching = await client.edit_message(searching, '검색중입니다..')
+            searching = await client.edit_message(searching, '검색중입니다...')
+            await client.send_typing(message.channel)
         else:
             player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다..')
+            searching = await client.send_message(message.channel, '검색중입니다...')
+            await client.send_typing(message.channel)
 
         result = siege.search(player_id)
         await client.edit_message(searching, result)
@@ -205,18 +209,49 @@ async def on_message(message):
                 await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
                 await client.delete_message(searching)
                 return
-            searching = await client.edit_message(searching, '검색중입니다..')
+            searching = await client.edit_message(searching, '검색중입니다...')
+            await client.send_typing(message.channel)
         else:
             player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다..')
+            searching = await client.send_message(message.channel, '검색중입니다...')
+            await client.send_typing(message.channel)
 
         result = apex.search(player_id)
-        embed = discord.Embed(title='플레이어: **' + player_id + '**',
-                              description='```' + result + '```\n 더 많은 정보는 [여기서](https://apex.tracker.gg/profile/pc/'
-                                          + player_id + ')',
-                              color=0x00ff00)
-        await client.delete_message(searching)
-        await client.send_message(message.channel, embed=embed)
+        if result == -1:
+            await client.edit_message(searching, '플레이어를 찾을 수 없습니다.')
+        else:
+            embed = discord.Embed(title='플레이어: **' + player_id + '**',
+                                  description='```' + result + '```\n 더 많은 정보는 [여기서](https://apex.tracker.gg/profile/pc/'
+                                              + player_id + ')',
+                                  color=0x00ff00)
+            await client.delete_message(searching)
+            await client.send_message(message.channel, embed=embed)
+
+##########################################################################################################
+
+##################리액션 관련 명령어######################################################################
+    elif message.content.startswith(COMMAND_REACTION):
+        if len(message.content.split(' ')) == 1:
+            embed = discord.Embed(title='!리액션 (커맨드)로 리액션을 재생할 수 있습니다.',
+                                  description='*커맨드 목록*\n```temp\nCOMMAND LIST BLAH BLAH```',
+                                  color=0xfdee00)
+            await client.send_message(message.channel, embed=embed)
+
+        else:
+            command = message.content.split(' ')[1]
+            author = message.author
+            channel = author.voice_channel
+            if channel != None:
+                voice = await client.join_voice_channel(channel)
+                player = voice.create_ffmpeg_player('data/music/Vu.mp3')
+                player.start()
+                while not player.is_done():
+                    await asyncio.sleep(1)
+                # disconnect after the player has finished
+                player.stop()
+                await voice.disconnect()
+            else:
+                await client.send_message(message.channel, '음성 채팅에 접속해있어야 합니다.')
 
 ##########################################################################################################
 

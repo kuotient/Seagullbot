@@ -8,4 +8,4 @@ def search(id):
         return str(player)
 
     except:
-        return '입력한 아이디를 찾지 못했습니다.'
+        return -1

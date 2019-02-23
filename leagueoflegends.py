@@ -7,7 +7,7 @@ from riotwatcher import RiotWatcher, ApiError
 
 watcher = RiotWatcher('RGAPI-dc064488-5a70-4ec4-a002-70f3a12aec60') # 갱신 필요.
 my_region = 'KR'
-with open('./champions.json', encoding='UTF8') as champions:
+with open('./data/champions.json', encoding='UTF8') as champions:
     champions = json.load(champions)
 
 
