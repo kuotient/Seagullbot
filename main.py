@@ -9,7 +9,7 @@ import nacl
 
 client = discord.Client()
 ###################### 버전 ################################
-VERSION = 'ver 0.37'
+VERSION = 'ver 0.5'
 ############################################################
 
 #########   명령어 상수 정의     ##########################################################################
@@ -20,30 +20,38 @@ COMMAND_LOLSTAT = '!롤전적'
 COMMAND_LOLNOW = '!롤현재'
 COMMAND_URF = '!우르프'
 COMMAND_R6STAT = '!레식전적'
+COMMAND_R6OPER = '!레식오퍼'
 COMMAND_APEX = '!에이펙스'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
 
 
 COMMAND_LIST = [
+    COMMAND_REACTION,
     COMMAND_HELP1,
     COMMAND_HELP2,
     COMMAND_LOLSTAT,
     COMMAND_LOLNOW,
     COMMAND_URF,
     COMMAND_R6STAT,
+    COMMAND_R6OPER,
     COMMAND_APEX,
     COMMAND_CLEAR1,
     COMMAND_CLEAR2
 ]
 
 HELP_LIST = [
-    [COMMAND_HELP1 + ', ' + COMMAND_HELP2, '명령어 리스트를 보여줍니다.', COMMAND_HELP1 + '`or `' + COMMAND_HELP2],
+    [COMMAND_HELP1 + ', ' + COMMAND_HELP2, '명령어 리스트를 보여줍니다.', COMMAND_HELP1 + '` or `' + COMMAND_HELP2],
     [COMMAND_LOLSTAT, '롤 전적을 보여줍니다.', COMMAND_LOLSTAT],
     [COMMAND_LOLNOW, '현재 플레이중인 롤 정보를 보여줍니다.', COMMAND_LOLNOW],
     [COMMAND_URF, '현재 우르프 티어를 보여줍니다.', COMMAND_URF],
     [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다.', COMMAND_R6STAT + ' (아이디)'],
     [COMMAND_APEX, '에이펙스 레전드 전적을 보여줍니다.', COMMAND_APEX + ' (아이디)'],
+    [COMMAND_REACTION, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION + ' (리스트)']
+]
+
+VOICE_COMMAND_LIST = [
+    'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers','nope', 'evil', 'ps1'
 ]
 
 ##########################################################################################################
@@ -67,9 +75,9 @@ async def on_message(message):
         msg = '\n'
         for i in range(0, len(HELP_LIST)):
             msg += '**' + HELP_LIST[i][0] + '**\n' + HELP_LIST[i][1] + '\n사용법: `' + HELP_LIST[i][2] + '`\n\n'
-        embed = discord.Embed(title='***ULTIMATE GUIDES for SEAGULLBOT                    ***',
-                              description= msg,
+        embed = discord.Embed(description= msg,
                               color=0x00ff00)
+        await client.send_message(message.channel, '***ULTIMATE GUIDES for SEAGULLBOT***')
         await client.send_message(message.channel, embed=embed)
 
     # !정리
@@ -89,6 +97,9 @@ async def on_message(message):
 
         for i in range(0, len(msg_list)):
             await client.delete_message(msg_list[i])
+
+    elif message.content.startswith('!끼룩'):
+        await client.send_message(message.channel, 'https://www.youtube.com/watch?v=m6qWcKLB7Ig')
 
 ##########################################################################################################
 
@@ -192,7 +203,37 @@ async def on_message(message):
             await client.send_typing(message.channel)
 
         result = siege.search(player_id)
-        await client.edit_message(searching, result)
+        await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
+        await client.send_message(message.channel, result)
+
+    # !레식오퍼
+    elif message.content.startswith(COMMAND_R6OPER):
+        if len(message.content.split(' ')) == 1:
+            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            if msg is None:
+                await client.delete_message(searching)
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                return
+
+            player_id = msg.content
+            await client.delete_message(msg)
+
+            if player_id is None:
+                await client.delete_message(searching)
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                return
+            searching = await client.edit_message(searching, '검색중입니다..')
+            await client.send_typing(message.channel)
+        else:
+            player_id = message.content.split(' ')[1]
+            searching = await client.send_message(message.channel, '검색중입니다..')
+            await client.send_typing(message.channel)
+
+        result_list = siege.search_operator(player_id)
+        await client.delete_message(searching)
+        for result in result_list:
+            await client.send_message(message.channel, result)
 
 ##########################################################################################################
 
@@ -230,10 +271,11 @@ async def on_message(message):
 ##########################################################################################################
 
 ##################리액션 관련 명령어######################################################################
+#ffmpeg 가 필요하며, ffmpeg 의 bin 폴더를 환경변수 설정해야 합니다.
     elif message.content.startswith(COMMAND_REACTION):
         if len(message.content.split(' ')) == 1:
             embed = discord.Embed(title='!리액션 (커맨드)로 리액션을 재생할 수 있습니다.',
-                                  description='*커맨드 목록*\n```temp\nCOMMAND LIST BLAH BLAH```',
+                                  description='*커맨드 목록*\n```' + str(VOICE_COMMAND_LIST) + '```',
                                   color=0xfdee00)
             await client.send_message(message.channel, embed=embed)
 
@@ -243,7 +285,7 @@ async def on_message(message):
             channel = author.voice_channel
             if channel != None:
                 voice = await client.join_voice_channel(channel)
-                player = voice.create_ffmpeg_player('data/music/Vu.mp3')
+                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3')
                 player.start()
                 while not player.is_done():
                     await asyncio.sleep(1)
@@ -251,7 +293,7 @@ async def on_message(message):
                 player.stop()
                 await voice.disconnect()
             else:
-                await client.send_message(message.channel, '음성 채팅에 접속해있어야 합니다.')
+                await client.send_message(message.channel, '음성 채팅에 접속해야 이용할 수 있습니다.')
 
 ##########################################################################################################
 
