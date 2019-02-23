@@ -3,6 +3,7 @@ import urf
 import discord
 import asyncio
 import siege
+import config
 
 client = discord.Client()
 #client = seagullbot.Client()
@@ -214,4 +215,4 @@ async def on_message(message):
 ##########################################################################################################
 
 #client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
+client.run(config.DISCORD_TOKEN)
