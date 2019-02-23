@@ -1,7 +1,7 @@
 import leagueoflegends as lol
 import urf
 import discord
-import seagullbot
+#import seagullbot
 import asyncio
 import siege
 
