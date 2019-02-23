@@ -52,24 +52,24 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    argv = message.content.split(' ')
+    argc = len(argv)
+
 #########   봇 기본 명령어     ##########################################################################
     # !도움
-    if message.content.startswith(COMMAND_HELP1) or message.content.startswith(COMMAND_HELP2):
+    if argv[0] == COMMAND_HELP1 or argv[0] == COMMAND_HELP2:
         msg = '__**() : 생략가능, <> : 필수입력입니다.**__\n'
         for i in range(0, len(HELP_LIST)):
             msg += '**' + HELP_LIST[i][0] + '**\n\t' + HELP_LIST[i][1] + '\n\t_' + HELP_LIST[i][2] + '_\n\n'
         await client.send_message(message.channel, msg)
 
-    elif message.content.startswith('!test'):
-        await client.send_message(message.channel, 'test!')
-
     # !정리
-    elif message.content.startswith(COMMAND_CLEAR1) or message.content.startswith(COMMAND_CLEAR2):
+    elif argv[0] == COMMAND_CLEAR1 or argv[0] == COMMAND_CLEAR2:
         msg_list = []
         async for x in client.logs_from(message.channel, limit=100):
             flag = 0
             for command in COMMAND_LIST:
-                if x.content.startswith(command):
+                if x.content.split(' ')[0] == command:
                     flag = 1
                     break
 
@@ -78,8 +78,14 @@ async def on_message(message):
                 if len(msg_list) >= 100:
                     break
 
-        for i in range(0, len(msg_list)):
-            await client.delete_message(msg_list[i])
+        for msg in msg_list:
+            await client.delete_message(msg)
+
+    elif argv[0] == '!test':
+        await client.send_message(message.channel, 'test!')
+
+    elif argv[0] == '!끼룩':
+        await client.send_message(message.channel, '끼룩끼룩!')
 
         #await client.clear_messages()
 
@@ -87,7 +93,7 @@ async def on_message(message):
 
 #########   롤 관련 명령어     ##########################################################################
     # !롤전적
-    elif message.content.startswith(COMMAND_LOLSTAT):
+    elif argv[0] == COMMAND_LOLSTAT:
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
@@ -107,7 +113,7 @@ async def on_message(message):
             await client.send_message(message.channel, embed=embed)
 
     # !롤현재
-    elif message.content.startswith(COMMAND_LOLNOW):
+    elif argv[0] == COMMAND_LOLNOW:
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
@@ -132,7 +138,7 @@ async def on_message(message):
 
 #########   우르프 관련 명령어     ######################################################################
     # !우르프
-    elif message.content.startswith(COMMAND_URF):
+    elif argv[0] == COMMAND_URF:
         await client.send_message(message.channel, '***:zap: URF TIER LIST :zap:** presented by* op.gg')
         (champions, winrate, kda) = urf.urf_rank()
         s = "```CHAMPION                                 WINRATE      KDA\n\n"
@@ -153,8 +159,8 @@ async def on_message(message):
 
 #########   레식 관련 명령어     ########################################################################
     # !레식전적
-    elif message.content.startswith(COMMAND_R6STAT):
-        if len(message.content.split(' ')) == 1:
+    elif argv[0] == COMMAND_R6STAT:
+        if argc == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
             msg = await client.wait_for_message(timeout=15.0, author=message.author)
             player_id = msg.content
@@ -174,5 +180,5 @@ async def on_message(message):
 
 ##########################################################################################################
 
-client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-#client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
+#client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
+client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
