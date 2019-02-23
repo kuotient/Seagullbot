@@ -2,7 +2,10 @@ import json
 from bs4 import BeautifulSoup
 from riotwatcher import RiotWatcher, ApiError
 
-watcher = RiotWatcher('RGAPI-5bb6c31e-5b70-4e8e-b397-37e46751f363')
+''' 라이엇 api 를 이용하는데 있어 '인증' 받지 않은 application 은 api 를 하루에 한번씩 갱신해야함. 
+    RiotWatcher 안의 code 가 api 이므로 이용하고 싶을때 갱신하여 쓸 것.'''
+
+watcher = RiotWatcher('RGAPI-dc064488-5a70-4ec4-a002-70f3a12aec60') # 갱신 필요.
 my_region = 'KR'
 with open('./champions.json', encoding='UTF8') as champions:
     champions = json.load(champions)

@@ -1,12 +1,15 @@
 import leagueoflegends as lol
 import urf
 import discord
-import seagullbot
 import asyncio
 import siege
+import apexlegends as apex
 
 client = discord.Client()
 #client = seagullbot.Client()
+###################### 버전 ################################
+VERSION = 'ver 0.3'
+############################################################
 
 #########   명령어 상수 정의     ##########################################################################
 COMMAND_HELP1 = '!도움'
@@ -15,8 +18,10 @@ COMMAND_LOLSTAT = '!롤전적'
 COMMAND_LOLNOW = '!롤현재'
 COMMAND_URF = '!우르프'
 COMMAND_R6STAT = '!레식전적'
+COMMAND_APEX = '!에이펙스'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
+
 
 COMMAND_LIST = [
     COMMAND_HELP1,
@@ -25,16 +30,18 @@ COMMAND_LIST = [
     COMMAND_LOLNOW,
     COMMAND_URF,
     COMMAND_R6STAT,
+    COMMAND_APEX,
     COMMAND_CLEAR1,
     COMMAND_CLEAR2
 ]
 
 HELP_LIST = [
-    [COMMAND_HELP1, '명령어 리스트를 보여줍니다', '사용법: ' + COMMAND_HELP1],
-    [COMMAND_LOLSTAT, '롤 전적을 보여줍니다', '사용법: ' + COMMAND_LOLSTAT],
-    [COMMAND_LOLNOW, '현재 플레이중인 롤 정보를 보여줍니다', '사용법: ' + COMMAND_LOLNOW],
-    [COMMAND_URF, '우르프 전적를 보여줍니다', '사용법: ' + COMMAND_URF],
-    [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다', '사용법: ' + COMMAND_R6STAT + ' (레식 아이디)'],
+    [COMMAND_HELP1 + ', ' + COMMAND_HELP2, '명령어 리스트를 보여줍니다.', COMMAND_HELP1 + '`or `' + COMMAND_HELP2],
+    [COMMAND_LOLSTAT, '롤 전적을 보여줍니다.', COMMAND_LOLSTAT],
+    [COMMAND_LOLNOW, '현재 플레이중인 롤 정보를 보여줍니다.', COMMAND_LOLNOW],
+    [COMMAND_URF, '현재 우르프 티어를 보여줍니다.', COMMAND_URF],
+    [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다.', COMMAND_R6STAT + ' (아이디)'],
+    [COMMAND_APEX, '에이펙스 레전드 전적을 보여줍니다.', COMMAND_APEX + ' (아이디)'],
 ]
 
 ##########################################################################################################
@@ -45,7 +52,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('-----')
-    await client.change_presence(game=discord.Game(name="ver 0.11"))
+    await client.change_presence(game=discord.Game(name=VERSION))
 
 @client.event
 async def on_message(message):
@@ -55,13 +62,13 @@ async def on_message(message):
 #########   봇 기본 명령어     ##########################################################################
     # !도움
     if message.content.startswith(COMMAND_HELP1) or message.content.startswith(COMMAND_HELP2):
-        msg = '__**() : 생략가능, <> : 필수입력입니다.**__\n'
+        msg = '\n'
         for i in range(0, len(HELP_LIST)):
-            msg += '**' + HELP_LIST[i][0] + '**\n\t' + HELP_LIST[i][1] + '\n\t_' + HELP_LIST[i][2] + '_\n\n'
-        await client.send_message(message.channel, msg)
-
-    elif message.content.startswith('!test'):
-        await client.send_message(message.channel, 'test!')
+            msg += '**' + HELP_LIST[i][0] + '**\n' + HELP_LIST[i][1] + '\n사용법: `' + HELP_LIST[i][2] + '`\n\n'
+        embed = discord.Embed(title='***ULTIMATE GUIDES for SEAGULLBOT                    ***',
+                              description= msg,
+                              color=0x00ff00)
+        await client.send_message(message.channel, embed=embed)
 
     # !정리
     elif message.content.startswith(COMMAND_CLEAR1) or message.content.startswith(COMMAND_CLEAR2):
@@ -108,25 +115,36 @@ async def on_message(message):
 
     # !롤현재
     elif message.content.startswith(COMMAND_LOLNOW):
-        await client.send_message(message.channel, '아이디를 입력하세요.')
-        msg = await client.wait_for_message(timeout=15.0, author=message.author)
+        if len(message.content.split(' ')) == 1:
+            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            player_id = msg.content
+            await client.delete_message(msg)
 
-        if msg is None:
-            await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-            return
+            if msg is None:
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                await client.delete_message(searching)
+                return
+            else:
+                searching = await client.edit_message(searching, '검색중입니다..')
         else:
-            temp = lol.search(msg.content)
-            if temp == 1:
-                embed = discord.Embed(title='NOW PLAYING: **'+ lol.find_champion_name(msg.content).upper() + '**',
-                                      description='[OP.GG](http://www.op.gg/summoner/userName='+ msg.content.replace(" ", "") + ') 에서 확인해보세요.',
-                                      color=0x00ff00)
-                embed.set_thumbnail(url=lol.find_champion_img(msg.content))
-                await client.send_message(message.channel, embed=embed)
-            elif temp == 0:
-                embed = discord.Embed(title=msg.content + ' is not playing right now. :zzz:',
-                                      description='다른 사람을 검색하시려면 !롤현재',
-                                      color=0xed2902)
-                await client.send_message(message.channel, embed=embed)
+            player_id = message.content.split(' ')[1]
+            searching = await client.send_message(message.channel, '검색중입니다..')
+
+        temp = lol.search(player_id)
+        if temp == 1:
+            embed = discord.Embed(title='NOW PLAYING: **'+ lol.find_champion_name(player_id).upper() + '**',
+                                  description='[OP.GG](http://www.op.gg/summoner/userName='+ player_id.replace(" ", "") + ') 에서 확인해보세요.',
+                                  color=0x00ff00)
+            embed.set_thumbnail(url=lol.find_champion_img(player_id))
+            await client.delete_message(searching)
+            await client.send_message(message.channel, embed=embed)
+        elif temp == 0:
+            embed = discord.Embed(title=player_id + ' is not playing right now. :zzz:',
+                                  description='다른 사람을 검색하시려면 `!롤현재 (아이디)`',
+                                  color=0xed2902)
+            await client.delete_message(searching)
+            await client.send_message(message.channel, embed=embed)
 
 ##########################################################################################################
 
@@ -160,7 +178,7 @@ async def on_message(message):
             player_id = msg.content
             await client.delete_message(msg)
 
-            if player_id is None:
+            if msg is None:
                 await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
                 await client.delete_message(searching)
                 return
@@ -171,6 +189,34 @@ async def on_message(message):
 
         result = siege.search(player_id)
         await client.edit_message(searching, result)
+
+##########################################################################################################
+
+###################에이펙스 관련 명령어 ##################################################################
+    # !에이펙스
+    elif message.content.startswith(COMMAND_APEX):
+        if len(message.content.split(' ')) == 1:
+            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            player_id = msg.content
+            await client.delete_message(msg)
+
+            if msg is None:
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                await client.delete_message(searching)
+                return
+            searching = await client.edit_message(searching, '검색중입니다..')
+        else:
+            player_id = message.content.split(' ')[1]
+            searching = await client.send_message(message.channel, '검색중입니다..')
+
+        result = apex.search(player_id)
+        embed = discord.Embed(title='플레이어: **' + player_id + '**',
+                              description='```' + result + '```\n 더 많은 정보는 [여기서](https://apex.tracker.gg/profile/pc/'
+                                          + player_id + ')',
+                              color=0x00ff00)
+        await client.delete_message(searching)
+        await client.send_message(message.channel, embed=embed)
 
 ##########################################################################################################
 
