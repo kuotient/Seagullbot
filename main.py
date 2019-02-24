@@ -71,7 +71,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    argv = message.content.split[' ']
+    argv = message.content.split(' ')
     argc = len(argv)
 
 #########   봇 기본 명령어     ##########################################################################
