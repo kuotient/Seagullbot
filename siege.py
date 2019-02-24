@@ -9,6 +9,59 @@ PHANTOMJS_PATH = 'phantomjs.exe'
 
 CHROME_PATH = 'chromedriver.exe'
 
+
+async def siege_search(argv, argc, client, message):
+    if argc == 1:
+        searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+        msg = await client.wait_for_message(timeout=15.0, author=message.author)
+        if msg is None:
+            await client.delete_message(searching)
+            await client.send_message(message.channel, '입력받은 시간 초과입니다.')
+            return
+
+        player_id = msg.content
+        await client.delete_message(msg)
+
+        searching = await client.edit_message(searching, '검색중입니다...')
+    else:
+        player_id = argv[1]
+        searching = await client.send_message(message.channel, '검색중입니다...')
+
+    #utils.execute_after(client.send_typing, parameters=message.channel, delay=9)
+    await client.send_typing(message.channel)
+    result = search(player_id)
+    await client.send_message(message.channel, result)
+    await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
+
+
+async def siege_search_operator(argv, argc, client, message):
+    if argc == 1:
+        searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+        msg = await client.wait_for_message(timeout=15.0, author=message.author)
+        if msg is None:
+            await client.delete_message(searching)
+            await client.send_message(message.channel, '입력받은 시간 초과입니다.')
+            return
+
+        player_id = msg.content
+        await client.delete_message(msg)
+
+        if player_id is None:
+            await client.delete_message(searching)
+            await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+            return
+        searching = await client.edit_message(searching, '검색중입니다..')
+    else:
+        player_id = argv[1]
+        searching = await client.send_message(message.channel, '검색중입니다..')
+
+    await client.send_typing(message.channel)
+    result_list = search_operator(player_id)
+    await client.delete_message(searching)
+    for result in result_list:
+        await client.send_message(message.channel, result)
+
+
 def search(id):
     try:
         res = requests.get('https://r6stats.com/search/' + id + '/pc/', headers={'User-Agent': 'Mozilla/5.0'})
@@ -226,7 +279,6 @@ def search(id):
     except Exception as ex:
         print(ex)
         return '처리 중 오류가 발생하였습니다.'
-
 
 
     # [190222][HKPARK] API 있긴한데 느려터져서 크롤링으로 가져오는게 더 빠름

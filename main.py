@@ -189,56 +189,11 @@ async def on_message(message):
 #########   레식 관련 명령어     ########################################################################
     # !레식전적
     elif argv[0] == COMMAND_R6STAT:
-        if argc == 1:
-            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
-            msg = await client.wait_for_message(timeout=15.0, author=message.author)
-            if msg is None:
-                await client.delete_message(searching)
-                await client.send_message(message.channel, '입력받은 시간 초과입니다.')
-                return
-
-            player_id = msg.content
-            await client.delete_message(msg)
-
-            searching = await client.edit_message(searching, '검색중입니다...')
-        else:
-            player_id = argv[1]
-            searching = await client.send_message(message.channel, '검색중입니다...')
-
-        #utils.execute_after(client.send_typing, parameters=message.channel, delay=9)
-        await client.send_typing(message.channel)
-        result = siege.search(player_id)
-        await client.send_message(message.channel, result)
-        await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
+        await siege.siege_search(argv, argc, client, message)
 
     # !레식오퍼
     elif argv[0] == COMMAND_R6OPER:
-        if argc == 1:
-            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
-            msg = await client.wait_for_message(timeout=15.0, author=message.author)
-            if msg is None:
-                await client.delete_message(searching)
-                await client.send_message(message.channel, '입력받은 시간 초과입니다.')
-                return
-
-            player_id = msg.content
-            await client.delete_message(msg)
-
-            if player_id is None:
-                await client.delete_message(searching)
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-                return
-            searching = await client.edit_message(searching, '검색중입니다..')
-            await client.send_typing(message.channel)
-        else:
-            player_id = argv[1]
-            searching = await client.send_message(message.channel, '검색중입니다..')
-            await client.send_typing(message.channel)
-
-        result_list = siege.search_operator(player_id)
-        await client.delete_message(searching)
-        for result in result_list:
-            await client.send_message(message.channel, result)
+        await siege.siege_search_operator(argv, argc, client, message)
 
 ##########################################################################################################
 
