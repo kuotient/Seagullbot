@@ -7,7 +7,6 @@ import siege
 import apexlegends as apex
 import nacl
 import config
-import utils
 
 client = discord.Client()
 ###################### 버전 ################################
@@ -205,8 +204,8 @@ async def on_message(message):
             player_id = message.content.split(' ')[1]
             searching = await client.send_message(message.channel, '검색중입니다...')
 
-        utils.execute_after(client.send_typing, parameters=message.channel, delay=9)
-        #await client.send_typing(message.channel)
+        #utils.execute_after(client.send_typing, parameters=message.channel, delay=9)
+        await client.send_typing(message.channel)
         result = siege.search(player_id)
         await client.send_message(message.channel, result)
         await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
