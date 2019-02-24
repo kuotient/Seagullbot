@@ -25,6 +25,7 @@ COMMAND_R6OPER = '!레식오퍼'
 COMMAND_APEX = '!에이펙스'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
+COMMAND_VOTE = '!투표'
 
 
 COMMAND_LIST = [
@@ -38,7 +39,8 @@ COMMAND_LIST = [
     COMMAND_R6OPER,
     COMMAND_APEX,
     COMMAND_CLEAR1,
-    COMMAND_CLEAR2
+    COMMAND_CLEAR2,
+    COMMAND_VOTE
 ]
 
 HELP_LIST = [
@@ -245,7 +247,7 @@ async def on_message(message):
             channel = author.voice_channel
             if channel != None:
                 voice = await client.join_voice_channel(channel)
-                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3')
+                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3', options=" -af 'volume=0.2'")
                 player.start()
                 while not player.is_done():
                     await asyncio.sleep(1)
@@ -254,6 +256,29 @@ async def on_message(message):
                 await voice.disconnect()
             else:
                 await client.send_message(message.channel, '음성 채팅에 접속해야 이용할 수 있습니다.')
+
+##########################################################################################################
+
+#############################투표 관련 명령어#############################################################
+    elif message.content.startswith(COMMAND_VOTE):
+        if len(message.content.split(' ')) == 1:
+            time = 30
+        else:
+            time = int(message.content.split(' ')[1])
+
+        msg = await client.send_message(message.channel, '투표하세요! 시간제한: *' + str(time) + '초*')
+        reactions = ['👍', '👎']
+        for emoji in reactions: await client.add_reaction(msg, emoji)
+        await asyncio.sleep(time)
+
+        cache_msg = discord.utils.get(client.messages, id=msg.id)
+        for reactor in cache_msg.reactions:
+            reactors = await client.get_reaction_users(reactor)
+
+            # from here you can do whatever you need with the member objects
+            for member in reactors:
+                if member.name != '갈매기봇':
+                    await client.send_message(message.channel, member.name)
 
 ##########################################################################################################
 
