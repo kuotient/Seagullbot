@@ -6,6 +6,7 @@ import asyncio
 import siege
 import apexlegends as apex
 import nacl
+import config
 
 client = discord.Client()
 ###################### 버전 ################################
@@ -49,13 +50,11 @@ HELP_LIST = [
     [COMMAND_URF, '현재 우르프 티어를 보여줍니다.', COMMAND_URF],
     [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다.', COMMAND_R6STAT + ' (아이디)'],
     [COMMAND_APEX, '에이펙스 레전드 전적을 보여줍니다.', COMMAND_APEX + ' (아이디)'],
-    [COMMAND_REACTION, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION + ' (리스트)'],
-    [COMMAND_VOTE, '간단한 투표 기능입니다.', COMMAND_VOTE + ' (시간)']
+    [COMMAND_REACTION, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION + ' (리스트)']
 ]
 
 VOICE_COMMAND_LIST = [
-    'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers',
-    'nope', 'evil_temp', 'ps1', 'psycho', 'no', 'fookin', 'nani'
+    'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers','nope', 'evil', 'ps1'
 ]
 
 ##########################################################################################################
@@ -73,9 +72,12 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    argv = message.content.split(' ')
+    argc = len(argv)
+
 #########   봇 기본 명령어     ##########################################################################
     # !도움
-    if message.content.startswith(COMMAND_HELP1) or message.content.startswith(COMMAND_HELP2):
+    if argv[0] == COMMAND_HELP1 or argv[0] == COMMAND_HELP2:
         msg = '\n'
         for i in range(0, len(HELP_LIST)):
             msg += '**' + HELP_LIST[i][0] + '**\n' + HELP_LIST[i][1] + '\n사용법: `' + HELP_LIST[i][2] + '`\n\n'
@@ -85,7 +87,7 @@ async def on_message(message):
         await client.send_message(message.channel, embed=embed)
 
     # !정리
-    elif message.content.startswith(COMMAND_CLEAR1) or message.content.startswith(COMMAND_CLEAR2):
+    elif argv[0] == COMMAND_CLEAR1 or argv[0] == COMMAND_CLEAR2:
         msg_list = []
         async for x in client.logs_from(message.channel, limit=100):
             flag = 0
@@ -102,14 +104,14 @@ async def on_message(message):
         for i in range(0, len(msg_list)):
             await client.delete_message(msg_list[i])
 
-    elif message.content.startswith('!끼룩'):
+    elif argv[0] == '!끼룩':
         await client.send_message(message.channel, 'https://www.youtube.com/watch?v=m6qWcKLB7Ig')
 
 ##########################################################################################################
 
 #########   롤 관련 명령어     ##########################################################################
     # !롤전적
-    elif message.content.startswith(COMMAND_LOLSTAT):
+    elif argv[0] == COMMAND_LOLSTAT:
         await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
@@ -129,7 +131,7 @@ async def on_message(message):
             await client.send_message(message.channel, embed=embed)
 
     # !롤현재
-    elif message.content.startswith(COMMAND_LOLNOW):
+    elif argv[0] == COMMAND_LOLNOW:
         if len(message.content.split(' ')) == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
             msg = await client.wait_for_message(timeout=15.0, author=message.author)
@@ -167,7 +169,7 @@ async def on_message(message):
 
 #########   우르프 관련 명령어     ######################################################################
     # !우르프
-    elif message.content.startswith(COMMAND_URF):
+    elif argv[0] == COMMAND_URF:
         await client.send_message(message.channel, '***:zap: URF TIER LIST :zap:** presented by* op.gg')
         (champions, winrate, kda) = urf.urf_rank()
         s = "```CHAMPION                                 WINRATE      KDA\n\n"
@@ -188,63 +190,19 @@ async def on_message(message):
 
 #########   레식 관련 명령어     ########################################################################
     # !레식전적
-    elif message.content.startswith(COMMAND_R6STAT):
-        if len(message.content.split(' ')) == 1:
-            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
-            msg = await client.wait_for_message(timeout=15.0, author=message.author)
-            player_id = msg.content
-            await client.delete_message(msg)
-
-            if msg is None:
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-                await client.delete_message(searching)
-                return
-            searching = await client.edit_message(searching, '검색중입니다...')
-            await client.send_typing(message.channel)
-        else:
-            player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다...')
-            await client.send_typing(message.channel)
-
-        result = siege.search(player_id)
-        await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
-        await client.send_message(message.channel, result)
+    elif argv[0] == COMMAND_R6STAT:
+        await siege.siege_search(argv, argc, client, message)
 
     # !레식오퍼
-    elif message.content.startswith(COMMAND_R6OPER):
-        if len(message.content.split(' ')) == 1:
-            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
-            msg = await client.wait_for_message(timeout=15.0, author=message.author)
-            if msg is None:
-                await client.delete_message(searching)
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-                return
-
-            player_id = msg.content
-            await client.delete_message(msg)
-
-            if player_id is None:
-                await client.delete_message(searching)
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-                return
-            searching = await client.edit_message(searching, '검색중입니다..')
-            await client.send_typing(message.channel)
-        else:
-            player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다..')
-            await client.send_typing(message.channel)
-
-        result_list = siege.search_operator(player_id)
-        await client.delete_message(searching)
-        for result in result_list:
-            await client.send_message(message.channel, result)
+    elif argv[0] == COMMAND_R6OPER:
+        await siege.siege_search_operator(argv, argc, client, message)
 
 ##########################################################################################################
 
 ###################에이펙스 관련 명령어 ##################################################################
     # !에이펙스
-    elif message.content.startswith(COMMAND_APEX):
-        if len(message.content.split(' ')) == 1:
+    elif argv[0] == COMMAND_APEX:
+        if argc == 1:
             searching = await client.send_message(message.channel, '아이디를 입력하세요.')
             msg = await client.wait_for_message(timeout=15.0, author=message.author)
             player_id = msg.content
@@ -276,15 +234,15 @@ async def on_message(message):
 
 ##################리액션 관련 명령어######################################################################
 #ffmpeg 가 필요하며, ffmpeg 의 bin 폴더를 환경변수 설정해야 합니다.
-    elif message.content.startswith(COMMAND_REACTION):
-        if len(message.content.split(' ')) == 1:
+    elif argv[0] == COMMAND_REACTION:
+        if argc == 1:
             embed = discord.Embed(title='!리액션 (커맨드)로 리액션을 재생할 수 있습니다.',
                                   description='*커맨드 목록*\n```' + str(VOICE_COMMAND_LIST) + '```',
                                   color=0xfdee00)
             await client.send_message(message.channel, embed=embed)
 
         else:
-            command = message.content.split(' ')[1]
+            command = argv[1]
             author = message.author
             channel = author.voice_channel
             if channel != None:
@@ -324,5 +282,4 @@ async def on_message(message):
 
 ##########################################################################################################
 
-client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-#client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
+client.run(config.DISCORD_TOKEN)
