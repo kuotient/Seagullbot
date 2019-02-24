@@ -24,6 +24,7 @@ COMMAND_R6OPER = '!레식오퍼'
 COMMAND_APEX = '!에이펙스'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
+COMMAND_VOTE = '!투표'
 
 
 COMMAND_LIST = [
@@ -37,7 +38,8 @@ COMMAND_LIST = [
     COMMAND_R6OPER,
     COMMAND_APEX,
     COMMAND_CLEAR1,
-    COMMAND_CLEAR2
+    COMMAND_CLEAR2,
+    COMMAND_VOTE
 ]
 
 HELP_LIST = [
@@ -47,11 +49,13 @@ HELP_LIST = [
     [COMMAND_URF, '현재 우르프 티어를 보여줍니다.', COMMAND_URF],
     [COMMAND_R6STAT, '레인보우식스 시즈 전적을 보여줍니다.', COMMAND_R6STAT + ' (아이디)'],
     [COMMAND_APEX, '에이펙스 레전드 전적을 보여줍니다.', COMMAND_APEX + ' (아이디)'],
-    [COMMAND_REACTION, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION + ' (리스트)']
+    [COMMAND_REACTION, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION + ' (리스트)'],
+    [COMMAND_VOTE, '간단한 투표 기능입니다.', COMMAND_VOTE + ' (시간)']
 ]
 
 VOICE_COMMAND_LIST = [
-    'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers','nope', 'evil', 'ps1'
+    'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers',
+    'nope', 'evil_temp', 'ps1', 'psycho', 'no', 'fookin', 'nani'
 ]
 
 ##########################################################################################################
@@ -285,7 +289,7 @@ async def on_message(message):
             channel = author.voice_channel
             if channel != None:
                 voice = await client.join_voice_channel(channel)
-                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3')
+                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3', options=" -af 'volume=0.2'")
                 player.start()
                 while not player.is_done():
                     await asyncio.sleep(1)
@@ -294,6 +298,29 @@ async def on_message(message):
                 await voice.disconnect()
             else:
                 await client.send_message(message.channel, '음성 채팅에 접속해야 이용할 수 있습니다.')
+
+##########################################################################################################
+
+#############################투표 관련 명령어#############################################################
+    elif message.content.startswith(COMMAND_VOTE):
+        if len(message.content.split(' ')) == 1:
+            time = 30
+        else:
+            time = int(message.content.split(' ')[1])
+
+        msg = await client.send_message(message.channel, '투표하세요! 시간제한: *' + str(time) + '초*')
+        reactions = ['👍', '👎']
+        for emoji in reactions: await client.add_reaction(msg, emoji)
+        await asyncio.sleep(time)
+
+        cache_msg = discord.utils.get(client.messages, id=msg.id)
+        for reactor in cache_msg.reactions:
+            reactors = await client.get_reaction_users(reactor)
+
+            # from here you can do whatever you need with the member objects
+            for member in reactors:
+                if member.name != '갈매기봇':
+                    await client.send_message(message.channel, member.name)
 
 ##########################################################################################################
 
