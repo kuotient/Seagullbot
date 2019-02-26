@@ -45,7 +45,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('-----')
-    await client.change_presence(game=discord.Game(name="ver 0.11"))
+    await client.change_presence(game=discord.Game(name="beta"))
 
 @client.event
 async def on_message(message):
@@ -54,6 +54,9 @@ async def on_message(message):
 
     argv = message.content.split(' ')
     argc = len(argv)
+#########
+    chatting = input()
+    client.send_message(message.channel, chatting)
 
 #########   봇 기본 명령어     ##########################################################################
     # !도움
@@ -179,6 +182,6 @@ async def on_message(message):
         await client.edit_message(searching, result)
 
 ##########################################################################################################
-
-client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
+client.run('NTQyNzg0NTEzMDM4ODc2Njcy.D1KpvQ.fpFBVD4JYOaObAfprDc0nzgc_2Y')
+#client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
 #client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
