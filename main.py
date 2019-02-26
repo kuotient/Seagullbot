@@ -6,9 +6,17 @@ import asyncio
 import siege
 import apexlegends as apex
 import nacl
-import config
+#import config
+import configparser
 
 client = discord.Client()
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+DISCORD_TOKEN = config['DEFAULT']['DISCORD_TOKEN']
+
+
 ###################### 버전 ################################
 VERSION = 'ver 0.5'
 ############################################################
@@ -282,4 +290,4 @@ async def on_message(message):
 
 ##########################################################################################################
 
-client.run(config.DISCORD_TOKEN)
+client.run(DISCORD_TOKEN)
