@@ -4,13 +4,14 @@ import json
 import requests
 import prettytable
 from selenium import webdriver
+import datetime
 
 PHANTOMJS_PATH = 'phantomjs.exe'
 
 CHROME_PATH = 'chromedriver.exe'
 
 
-async def siege_search(argv, argc, client, message):
+async def siege_search_stats(argv, argc, client, message):
     if argc == 1:
         searching = await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
@@ -64,153 +65,196 @@ async def siege_search_operator(argv, argc, client, message):
 
 def search(id):
     try:
-        res = requests.get('https://r6stats.com/search/' + id + '/pc/', headers={'User-Agent': 'Mozilla/5.0'})
-        bs = BeautifulSoup(res.text, 'html.parser')
-        link = bs.select('#__layout > div > div.search-results__wrapper > div > div > div.card > div > div > div > a')
-        if len(link) == 0:
-            return '플레이어를 찾을수 없습니다.'
-        href = link[0].get('href')
-        res = requests.get('https://r6stats.com' + href, headers={'User-Agent': 'Mozilla/5.0'})
-        bs = BeautifulSoup(res.text, 'html.parser')
+        # [190226][HKPARK] r6stats api 를 새로 찾아서 그 기능 활용
+        res = requests.get('https://r6stats.com/api/player-search/' + id + '/pc', headers={'User-Agent': 'Mozilla/5.0'})
+        jsonObject = json.loads(res.text)
+        ubisoft_id = jsonObject[0]['ubisoft_id']
+        res = requests.get('https://r6stats.com/api/stats/' + ubisoft_id, headers={'User-Agent': 'Mozilla/5.0'})
+        stat_json = json.loads(res.text)
+        overall = stat_json['stats'][0]['general']
+        casual = stat_json['stats'][0]['queue']['casual']
+        ranked = stat_json['stats'][0]['queue']['ranked']
 
-        overall = {
-            'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper > 
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div.stat-section.wide > span''')[0].get_text(),
-            'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(2) > span''')[0].get_text(),
-            'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                        div > div > div > div.player-stats__stats > div.stats-center > 
-                                        div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                        div:nth-of-type(3) > span''')[0].get_text(),
-            'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(4) > span''')[0].get_text(),
-            'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(5) > span''')[0].get_text(),
-            'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(6) > span''')[0].get_text(),
-            'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(7) > span''')[0].get_text(),
-            'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(8) > span''')[0].get_text(),
-            'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__overall.horizontal > div.card__content > 
-                                    div:nth-of-type(9) > span''')[0].get_text(),
-            'blind_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card-wrapper.block__kills > div > div.card__content > 
-                                    div:nth-of-type(2) > span''')[0].get_text(),
-            'melee_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card-wrapper.block__kills > div > div.card__content > 
-                                    div:nth-of-type(3) > span''')[0].get_text(),
-            'penet_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card-wrapper.block__kills > div > div.card__content > 
-                                    div:nth-of-type(4) > span''')[0].get_text(),
-            'headshot': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card-wrapper.block__kills > div > div.card__content > 
-                                    div:nth-of-type(5) > span''')[0].get_text(),
-            'head_ratio': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card-wrapper.block__kills > div > div.card__content > 
-                                    div:nth-of-type(6) > span''')[0].get_text(),
-            'fav_oper': bs.select('''#__layout > div > div.player-stats > div.player-header__wrapper > 
-                                div > div > div.player-header__left-side > img''')[0].get('alt')
-        }
+        message = '```'
+        message += "플레이어 : {}\n\n".format(id)
 
-        casual = {
-            'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                    div.stat-section.wide > span''')[0].get_text(),
-            'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                    div:nth-of-type(2) > span''')[0].get_text(),
-            'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                    div > div > div > div.player-stats__stats > div.stats-center > 
-                                    div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                    div:nth-of-type(3) > span''')[0].get_text(),
-            'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(4) > span''')[0].get_text(),
-            'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(5) > span''')[0].get_text(),
-            'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(6) > span''')[0].get_text(),
-            'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(7) > span''')[0].get_text(),
-            'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(8) > span''')[0].get_text(),
-            'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                                div > div > div > div.player-stats__stats > div.stats-center > 
-                                div.card.stat-card.block__casual.horizontal > div.card__content > 
-                                div:nth-of-type(9) > span''')[0].get_text()
-        }
+        message += "".ljust(20) + "총괄".ljust(13) + "\n\n"
+        message += "플레이한 시간".ljust(15) + str(datetime.datetime.fromtimestamp(overall["playtime"]).strftime('%dd %Hh %Mm')).ljust(13) + "\n"
+        message += "플레이한 매치".ljust(15) + "{:,}".format(overall["wins"] + overall["losses"]).ljust(13) + "\n"
+        message += "매치당 사살 수".ljust(15) + str(overall["kills"] / (overall["wins"] + overall["losses"])).ljust(13) + "\n"
+        message += "사살".ljust(18) + "{:,}".format(overall["kills"]).ljust(13) + "\n"
+        message += "사망".ljust(18) + "{:,}".format(overall["deaths"]).ljust(13) + "\n"
+        message += "킬뎃".ljust(18) + str(overall["kd"]).ljust(13) + "\n"
+        message += "승리".ljust(18) + "{:,}".format(overall["wins"]).ljust(13) + "\n"
+        message += "패배".ljust(18) + "{:,}".format(overall["losses"]).ljust(13) + "\n"
+        message += "승/패".ljust(18) + str(overall["wl"]).ljust(13) + "\n"
+        message += "눈먼 사살".ljust(16) + "{:,}".format(overall["blind_kills"]).ljust(13) + "\n"
+        message += "근접 사살".ljust(16) + "{:,}".format(overall["melee_kills"]).ljust(13) + "\n"
+        message += "관통 사살".ljust(16) + "{:,}".format(overall["penetration_kills"]).ljust(13) + "\n"
+        message += "헤드샷".ljust(17) + "{:,}".format(overall["headshots"]).ljust(13) + "\n"
+        message += "헤드샷 비율".ljust(15) + (str(overall["headshots"] * 100 / overall["kills"]) + "%").ljust(13) + "\n"
+        #message += "선호 오퍼".ljust(16) + overall["fav_oper"].ljust(13) + "\n\n"
+        message += "".ljust(47, '-') + '\n\n'
+        message += "".ljust(20) + "캐주얼".ljust(13) + "랭크".ljust(13) + "\n\n"
+        #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
+        message += "사살".ljust(18) + "{:,}".format(casual["kills"]).ljust(16) + "{:,}".format(ranked["kills"]).ljust(13) + "\n"
+        message += "사망".ljust(18) + "{:,}".format(casual["deaths"]).ljust(16) + "{:,}".format(ranked["deaths"]).ljust(13) + "\n"
+        message += "킬뎃".ljust(18) + str(casual["kd"]).ljust(16) + str(ranked["kd"]).ljust(13) + "\n"
+        message += "승리".ljust(18) + "{:,}".format(casual["wins"]).ljust(16) + "{:,}".format(ranked["wins"]).ljust(13) + "\n"
+        message += "패배".ljust(18) + "{:,}".format(casual["losses"]).ljust(16) + "{:,}".format(ranked["losses"]).ljust(13) + "\n"
+        message += "승/패".ljust(18) + str(casual["wl"]).ljust(16) + str(ranked["wl"]).ljust(13) + "\n"
+        #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
+        message += '```'
+        return message
 
-        ranked = {
-            'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                            div > div > div > div.player-stats__stats > div.stats-center > 
-                            div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                            div.stat-section.wide > span''')[0].get_text(),
-            'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                            div > div > div > div.player-stats__stats > div.stats-center > 
-                            div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                            div:nth-of-type(2) > span''')[0].get_text(),
-            'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                            div > div > div > div.player-stats__stats > div.stats-center > 
-                            div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                            div:nth-of-type(3) > span''')[0].get_text(),
-            'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(4) > span''')[0].get_text(),
-            'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(5) > span''')[0].get_text(),
-            'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(6) > span''')[0].get_text(),
-            'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(7) > span''')[0].get_text(),
-            'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(8) > span''')[0].get_text(),
-            'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
-                        div > div > div > div.player-stats__stats > div.stats-center > 
-                        div.card.stat-card.block__ranked.horizontal > div.card__content > 
-                        div:nth-of-type(9) > span''')[0].get_text(),
-        }
+        #
+        # res = requests.get('https://r6stats.com/search/' + id + '/pc/', headers={'User-Agent': 'Mozilla/5.0'})
+        # bs = BeautifulSoup(res.text, 'html.parser')
+        # link = bs.select('#__layout > div > div.search-results__wrapper > div > div > div.card > div > div > div > a')
+        # if len(link) == 0:
+        #     return '플레이어를 찾을수 없습니다.'
+        # href = link[0].get('href')
+        # res = requests.get('https://r6stats.com' + href, headers={'User-Agent': 'Mozilla/5.0'})
+        # bs = BeautifulSoup(res.text, 'html.parser')
+        #
+        # overall = {
+        #     'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div.stat-section.wide > span''')[0].get_text(),
+        #     'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(2) > span''')[0].get_text(),
+        #     'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                                 div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                                 div:nth-of-type(3) > span''')[0].get_text(),
+        #     'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(4) > span''')[0].get_text(),
+        #     'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(5) > span''')[0].get_text(),
+        #     'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(6) > span''')[0].get_text(),
+        #     'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(7) > span''')[0].get_text(),
+        #     'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(8) > span''')[0].get_text(),
+        #     'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__overall.horizontal > div.card__content >
+        #                             div:nth-of-type(9) > span''')[0].get_text(),
+        #     'blind_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card-wrapper.block__kills > div > div.card__content >
+        #                             div:nth-of-type(2) > span''')[0].get_text(),
+        #     'melee_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card-wrapper.block__kills > div > div.card__content >
+        #                             div:nth-of-type(3) > span''')[0].get_text(),
+        #     'penet_kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card-wrapper.block__kills > div > div.card__content >
+        #                             div:nth-of-type(4) > span''')[0].get_text(),
+        #     'headshot': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card-wrapper.block__kills > div > div.card__content >
+        #                             div:nth-of-type(5) > span''')[0].get_text(),
+        #     'head_ratio': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card-wrapper.block__kills > div > div.card__content >
+        #                             div:nth-of-type(6) > span''')[0].get_text(),
+        #     'fav_oper': bs.select('''#__layout > div > div.player-stats > div.player-header__wrapper >
+        #                         div > div > div.player-header__left-side > img''')[0].get('alt')
+        # }
+        #
+        # casual = {
+        #     'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                             div.stat-section.wide > span''')[0].get_text(),
+        #     'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                             div:nth-of-type(2) > span''')[0].get_text(),
+        #     'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                             div > div > div > div.player-stats__stats > div.stats-center >
+        #                             div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                             div:nth-of-type(3) > span''')[0].get_text(),
+        #     'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(4) > span''')[0].get_text(),
+        #     'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(5) > span''')[0].get_text(),
+        #     'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(6) > span''')[0].get_text(),
+        #     'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(7) > span''')[0].get_text(),
+        #     'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(8) > span''')[0].get_text(),
+        #     'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                         div > div > div > div.player-stats__stats > div.stats-center >
+        #                         div.card.stat-card.block__casual.horizontal > div.card__content >
+        #                         div:nth-of-type(9) > span''')[0].get_text()
+        # }
+        #
+        # ranked = {
+        #     'playtime': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                     div > div > div > div.player-stats__stats > div.stats-center >
+        #                     div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                     div.stat-section.wide > span''')[0].get_text(),
+        #     'playmatch': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                     div > div > div > div.player-stats__stats > div.stats-center >
+        #                     div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                     div:nth-of-type(2) > span''')[0].get_text(),
+        #     'k/m': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                     div > div > div > div.player-stats__stats > div.stats-center >
+        #                     div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                     div:nth-of-type(3) > span''')[0].get_text(),
+        #     'kills': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(4) > span''')[0].get_text(),
+        #     'deaths': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(5) > span''')[0].get_text(),
+        #     'kd': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(6) > span''')[0].get_text(),
+        #     'wins': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(7) > span''')[0].get_text(),
+        #     'losses': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(8) > span''')[0].get_text(),
+        #     'wlr': bs.select('''#__layout > div > div.player-stats > div.stats-display__wrapper >
+        #                 div > div > div > div.player-stats__stats > div.stats-center >
+        #                 div.card.stat-card.block__ranked.horizontal > div.card__content >
+        #                 div:nth-of-type(9) > span''')[0].get_text(),
+        # }
 
 
         # table_2r = prettytable.PrettyTable(['', 'Overall'])
@@ -243,37 +287,37 @@ def search(id):
         # return '```플레이어 : ' + id + '\n' + table_2r.get_string() + '\n' + table_3r.get_string() + '```'
 
 
-        message = '```'
-        message += "플레이어 : {}\n\n".format(id)
-
-        message += "".ljust(20) + "총괄".ljust(13) + "\n\n"
-        message += "플레이한 시간".ljust(15) + overall["playtime"].ljust(13) + "\n"
-        message += "플레이한 매치".ljust(15) + overall["playmatch"].ljust(13) + "\n"
-        message += "매치당 사살 수".ljust(15) + overall["k/m"].ljust(13) + "\n"
-        message += "사살".ljust(18) + overall["kills"].ljust(13) + "\n"
-        message += "사망".ljust(18) + overall["deaths"].ljust(13) + "\n"
-        message += "킬뎃".ljust(18) + overall["kd"].ljust(13) + "\n"
-        message += "승리".ljust(18) + overall["wins"].ljust(13) + "\n"
-        message += "패배".ljust(18) + overall["losses"].ljust(13) + "\n"
-        message += "승/패".ljust(18) + overall["wlr"].ljust(13) + "\n"
-        message += "눈먼 사살".ljust(16) + overall["blind_kills"].ljust(13) + "\n"
-        message += "근접 사살".ljust(16) + overall["melee_kills"].ljust(13) + "\n"
-        message += "관통 사살".ljust(16) + overall["penet_kills"].ljust(13) + "\n"
-        message += "헤드샷".ljust(17) + overall["headshot"].ljust(13) + "\n"
-        message += "헤드샷 비율".ljust(15) + overall["head_ratio"].ljust(13) + "\n"
-        message += "선호 오퍼".ljust(16) + overall["fav_oper"].ljust(13) + "\n\n"
-        message += "".ljust(47, '-') + '\n\n'
-        message += "".ljust(20) + "캐주얼".ljust(13) + "랭크".ljust(13) + "\n\n"
-        #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
-        message += "사살".ljust(18) + casual["kills"].ljust(16) + ranked["kills"].ljust(13) + "\n"
-        message += "사망".ljust(18) + casual["deaths"].ljust(16) + ranked["deaths"].ljust(13) + "\n"
-        message += "킬뎃".ljust(18) + casual["kd"].ljust(16) + ranked["kd"].ljust(13) + "\n"
-        message += "승리".ljust(18) + casual["wins"].ljust(16) + ranked["wins"].ljust(13) + "\n"
-        message += "패배".ljust(18) + casual["losses"].ljust(16) + ranked["losses"].ljust(13) + "\n"
-        message += "승/패".ljust(18) + casual["wlr"].ljust(16) + ranked["wlr"].ljust(13) + "\n"
-        #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
-        message += '```'
-        return message
+        # message = '```'
+        # message += "플레이어 : {}\n\n".format(id)
+        #
+        # message += "".ljust(20) + "총괄".ljust(13) + "\n\n"
+        # message += "플레이한 시간".ljust(15) + overall["playtime"].ljust(13) + "\n"
+        # message += "플레이한 매치".ljust(15) + overall["playmatch"].ljust(13) + "\n"
+        # message += "매치당 사살 수".ljust(15) + overall["k/m"].ljust(13) + "\n"
+        # message += "사살".ljust(18) + overall["kills"].ljust(13) + "\n"
+        # message += "사망".ljust(18) + overall["deaths"].ljust(13) + "\n"
+        # message += "킬뎃".ljust(18) + overall["kd"].ljust(13) + "\n"
+        # message += "승리".ljust(18) + overall["wins"].ljust(13) + "\n"
+        # message += "패배".ljust(18) + overall["losses"].ljust(13) + "\n"
+        # message += "승/패".ljust(18) + overall["wlr"].ljust(13) + "\n"
+        # message += "눈먼 사살".ljust(16) + overall["blind_kills"].ljust(13) + "\n"
+        # message += "근접 사살".ljust(16) + overall["melee_kills"].ljust(13) + "\n"
+        # message += "관통 사살".ljust(16) + overall["penet_kills"].ljust(13) + "\n"
+        # message += "헤드샷".ljust(17) + overall["headshot"].ljust(13) + "\n"
+        # message += "헤드샷 비율".ljust(15) + overall["head_ratio"].ljust(13) + "\n"
+        # message += "선호 오퍼".ljust(16) + overall["fav_oper"].ljust(13) + "\n\n"
+        # message += "".ljust(47, '-') + '\n\n'
+        # message += "".ljust(20) + "캐주얼".ljust(13) + "랭크".ljust(13) + "\n\n"
+        # #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
+        # message += "사살".ljust(18) + casual["kills"].ljust(16) + ranked["kills"].ljust(13) + "\n"
+        # message += "사망".ljust(18) + casual["deaths"].ljust(16) + ranked["deaths"].ljust(13) + "\n"
+        # message += "킬뎃".ljust(18) + casual["kd"].ljust(16) + ranked["kd"].ljust(13) + "\n"
+        # message += "승리".ljust(18) + casual["wins"].ljust(16) + ranked["wins"].ljust(13) + "\n"
+        # message += "패배".ljust(18) + casual["losses"].ljust(16) + ranked["losses"].ljust(13) + "\n"
+        # message += "승/패".ljust(18) + casual["wlr"].ljust(16) + ranked["wlr"].ljust(13) + "\n"
+        # #message += "|" + "".center(18, '-') + "|" + "".center(13, '-') + "|" + "".center(13, '-') + "|" + "\n"
+        # message += '```'
+        # return message
 
 
     except Exception as ex:
@@ -405,4 +449,3 @@ def search_operator(id):
     except Exception as ex:
         print(ex)
         return '처리 중 오류가 발생하였습니다.'
-

@@ -191,7 +191,7 @@ async def on_message(message):
 #########   레식 관련 명령어     ########################################################################
     # !레식전적
     elif argv[0] == COMMAND_R6STAT:
-        await siege.siege_search(argv, argc, client, message)
+        await siege.siege_search_stats(argv, argc, client, message)
 
     # !레식오퍼
     elif argv[0] == COMMAND_R6OPER:
