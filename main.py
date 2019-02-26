@@ -1,11 +1,13 @@
 import leagueoflegends as lol
 import urf
 import discord
+from discord.voice_client import VoiceClient
 import asyncio
 import siege
-import pubg
 import apexlegends as apex
+import nacl
 import config
+import pubg
 
 client = discord.Client()
 ###################### 버전 ################################
@@ -22,10 +24,10 @@ COMMAND_URF = '!우르프'
 COMMAND_R6STAT = '!레식전적'
 COMMAND_R6OPER = '!레식오퍼'
 COMMAND_APEX = '!에이펙스'
+COMMAND_PUBG = '!배그전적'
 COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
-COMMAND_VOTE = '!투표'
-COMMAND_PUBG = '!배그전적'
+
 
 COMMAND_LIST = [
     COMMAND_REACTION,
@@ -37,10 +39,9 @@ COMMAND_LIST = [
     COMMAND_R6STAT,
     COMMAND_R6OPER,
     COMMAND_APEX,
+    COMMAND_PUBG,
     COMMAND_CLEAR1,
-    COMMAND_CLEAR2,
-    COMMAND_VOTE,
-    COMMAND_PUBG
+    COMMAND_CLEAR2
 ]
 
 HELP_LIST = [
@@ -66,7 +67,6 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('-----')
-    await client.change_presence(game=discord.Game(name="beta"))
     await client.change_presence(game=discord.Game(name=VERSION))
 
 @client.event
@@ -76,9 +76,6 @@ async def on_message(message):
 
     argv = message.content.split(' ')
     argc = len(argv)
-#########
-    chatting = input()
-    client.send_message(message.channel, chatting)
 
 #########   봇 기본 명령어     ##########################################################################
     # !도움
@@ -127,7 +124,7 @@ async def on_message(message):
             embed = discord.Embed(title='함부로 그를 검색하지 마십시오. 경고합니다.',
                                   description='warning.or.kr',
                                   color=0x00ff00)
-            await client.send_message(message.channel, embed=embed)            
+            await client.send_message(message.channel, embed=embed)
         else:
             embed = discord.Embed(title='최근 전적',
                                   description='[OP.GG](http://www.op.gg/summoner/userName=' + msg.content.replace(" ", "") + ')',
@@ -204,39 +201,7 @@ async def on_message(message):
 
 ##########################################################################################################
 
-    #!배그전적
-    elif argv[0] == COMMAND_PUBG:
-        if argc == 1:
-            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
-            msg = await client.wait_for_message(timeout=15.0, author=message.author)
-            player_id = msg.content
-            await client.delete_message(msg)
-
-            if msg is None:
-                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-                await client.delete_message(searching)
-                return
-            searching = await client.edit_message(searching, '검색중입니다...')
-            await client.send_typing(message.channel)
-        else:
-            player_id = message.content.split(' ')[1]
-            searching = await client.send_message(message.channel, '검색중입니다...')
-            await client.send_typing(message.channel)
-
-        result = pubg.pubg_search(player_id)
-
-        if result == -1:
-            await client.edit_message(searching, '플레이어를 찾을 수 없습니다.')
-        else:
-            embed = discord.Embed(title='플레이어: **' + player_id + '**',
-                                  description='```' + result + '```\n 더 많은 정보는 [여기서](https://pubg.op.gg/user/'
-                                              + player_id + ')',
-                                  color=0x00ff00)
-            await client.delete_message(searching)
-            await client.send_message(message.channel, embed=embed)
-
-
-    ###################에이펙스 관련 명령어 ##################################################################
+###################에이펙스 관련 명령어 ##################################################################
     # !에이펙스
     elif argv[0] == COMMAND_APEX:
         if argc == 1:
@@ -268,8 +233,40 @@ async def on_message(message):
             await client.send_message(message.channel, embed=embed)
 
 ##########################################################################################################
+    # !배그
+    elif argv[0] == COMMAND_PUBG:
+        if argc == 1:
+            searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
+            player_id = msg.content
+            await client.delete_message(msg)
 
-##################리액션 관련 명령어######################################################################
+            if msg is None:
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                await client.delete_message(searching)
+                return
+            searching = await client.edit_message(searching, '검색중입니다...')
+            await client.send_typing(message.channel)
+        else:
+            player_id = message.content.split(' ')[1]
+            searching = await client.send_message(message.channel, '검색중입니다...')
+            await client.send_typing(message.channel)
+
+        result = pubg.pubg_search(player_id)
+        if result == -1:
+            await client.edit_message(searching, '플레이어를 찾을 수 없습니다.')
+        else:
+            embed = discord.Embed(title='플레이어: **' + player_id + '**',
+                                  description='```' + result + '```\n 더 많은 정보는 [여기서](https://pubg.op.gg/user/'
+                                              + player_id + ')',
+                                  color=0x00ff00)
+            await client.delete_message(searching)
+            await client.send_message(message.channel, embed=embed)
+
+
+##########################################################################################################
+
+    ##################리액션 관련 명령어######################################################################
 #ffmpeg 가 필요하며, ffmpeg 의 bin 폴더를 환경변수 설정해야 합니다.
     elif argv[0] == COMMAND_REACTION:
         if argc == 1:
@@ -284,7 +281,7 @@ async def on_message(message):
             channel = author.voice_channel
             if channel != None:
                 voice = await client.join_voice_channel(channel)
-                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3', options=" -af 'volume=0.2'")
+                player = voice.create_ffmpeg_player('data/music/' + command + '.mp3')
                 player.start()
                 while not player.is_done():
                     await asyncio.sleep(1)
@@ -295,32 +292,5 @@ async def on_message(message):
                 await client.send_message(message.channel, '음성 채팅에 접속해야 이용할 수 있습니다.')
 
 ##########################################################################################################
-
-#############################투표 관련 명령어#############################################################
-    elif message.content.startswith(COMMAND_VOTE):
-        if len(message.content.split(' ')) == 1:
-            time = 30
-        else:
-            time = int(message.content.split(' ')[1])
-
-        msg = await client.send_message(message.channel, '투표하세요! 시간제한: *' + str(time) + '초*')
-        reactions = ['👍', '👎']
-        for emoji in reactions: await client.add_reaction(msg, emoji)
-        await asyncio.sleep(time)
-
-        cache_msg = discord.utils.get(client.messages, id=msg.id)
-        for reactor in cache_msg.reactions:
-            reactors = await client.get_reaction_users(reactor)
-
-            # from here you can do whatever you need with the member objects
-            for member in reactors:
-                if member.name != '갈매기봇':
-                    await client.send_message(message.channel, member.name)
-
-##########################################################################################################
-#client.run('NTQyNzg0NTEzMDM4ODc2Njcy.D1KpvQ.fpFBVD4JYOaObAfprDc0nzgc_2Y')
-#client.run('NTQyNjgyMTkyMjEyMzkzOTg0.DzxmWA.QhMZJ-8KNgo9Nxjt0eLPgkHNQYg')
-#client.run('NTQ4MzIxNDQyODE5ODY2NjU1.D1DrCg.4oZpqUgQ4PEHhPgZD29tPVWsdwU')
-
 
 client.run(config.DISCORD_TOKEN)
