@@ -12,7 +12,7 @@ import configparser
 client = discord.Client()
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('./config.ini')
 
 DISCORD_TOKEN = config['DEFAULT']['DISCORD_TOKEN']
 
