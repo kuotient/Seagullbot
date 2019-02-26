@@ -6,9 +6,17 @@ import asyncio
 import siege
 import apexlegends as apex
 import nacl
-import config
+#import config
+import configparser
 
 client = discord.Client()
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+DISCORD_TOKEN = config['DEFAULT']['DISCORD_TOKEN']
+
+
 ###################### 버전 ################################
 VERSION = 'ver 0.5'
 ############################################################
@@ -191,7 +199,7 @@ async def on_message(message):
 #########   레식 관련 명령어     ########################################################################
     # !레식전적
     elif argv[0] == COMMAND_R6STAT:
-        await siege.siege_search(argv, argc, client, message)
+        await siege.siege_search_stats(argv, argc, client, message)
 
     # !레식오퍼
     elif argv[0] == COMMAND_R6OPER:
@@ -282,4 +290,4 @@ async def on_message(message):
 
 ##########################################################################################################
 
-client.run(config.DISCORD_TOKEN)
+client.run(DISCORD_TOKEN)
