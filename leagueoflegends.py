@@ -5,7 +5,7 @@ from riotwatcher import RiotWatcher, ApiError
 ''' 라이엇 api 를 이용하는데 있어 '인증' 받지 않은 application 은 api 를 하루에 한번씩 갱신해야함. 
     RiotWatcher 안의 code 가 api 이므로 이용하고 싶을때 갱신하여 쓸 것.'''
 
-watcher = RiotWatcher('RGAPI-dc064488-5a70-4ec4-a002-70f3a12aec60') # 갱신 필요.
+watcher = RiotWatcher('RGAPI-52414e05-2faf-4005-877d-073761e2cc2c') # 갱신 필요.
 my_region = 'KR'
 with open('./data/champions.json', encoding='UTF8') as champions:
     champions = json.load(champions)
