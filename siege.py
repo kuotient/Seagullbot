@@ -12,7 +12,7 @@ PHANTOMJS_PATH = 'phantomjs.exe'
 CHROME_PATH = 'chromedriver.exe'
 
 
-async def siege_search_stats(argv, argc, client, message):
+async def siege_search_stats(argc, argv, client, message):
     if argc == 1:
         searching = await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
@@ -46,7 +46,7 @@ async def siege_search_stats(argv, argc, client, message):
     await client.delete_message(searching)
 
 
-async def siege_search_operator(argv, argc, client, message):
+async def siege_search_operator(argc, argv, client, message):
     if argc == 1:
         searching = await client.send_message(message.channel, '아이디를 입력하세요.')
         msg = await client.wait_for_message(timeout=15.0, author=message.author)
@@ -119,7 +119,7 @@ def search_stats(ubisoft_id):
         message += "킬뎃".ljust(18) + "{0:.2f}".format(overall["kd"]).rjust(13) + "\n"
         message += "승리".ljust(18) + "{:,}".format(overall["wins"]).rjust(13) + "\n"
         message += "패배".ljust(18) + "{:,}".format(overall["losses"]).rjust(13) + "\n"
-        message += "승/패".ljust(18) + "{0:.2f}".format(overall["wl"]).rjust(13) + "\n"
+        message += "승률".ljust(18) + "{0:.2f}".format(overall["wl"]).rjust(13) + "\n"
         message += "눈먼 사살".ljust(16) + "{:,}".format(overall["blind_kills"]).rjust(13) + "\n"
         message += "근접 사살".ljust(16) + "{:,}".format(overall["melee_kills"]).rjust(13) + "\n"
         message += "관통 사살".ljust(16) + "{:,}".format(overall["penetration_kills"]).rjust(13) + "\n"
@@ -361,7 +361,7 @@ def search_operator(ubisoft_id):
             message += "킬뎃".rjust(4)
             #message += "승리".rjust(4)
             #message += "패배".rjust(4)
-            message += "승패".rjust(4)
+            message += "승률".rjust(4)
             #message += "헤드샷율".rjust(6)
             message += "플탐".rjust(7)
             message += "\n".rjust(7)
