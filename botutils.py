@@ -74,13 +74,17 @@ async def botutil_reaction(argc, argv, client, message):
         return
 
     voice = await client.join_voice_channel(channel)
-    player = voice.create_ffmpeg_player(REACTION_DIR + command + '.mp3', options=" -af 'volume=0.25'")
-    player.start()
-    while not player.is_done():
-        await asyncio.sleep(1)
-    # disconnect after the player has finished
-    player.stop()
-    await voice.disconnect()
+    try:
+        player = voice.create_ffmpeg_player(REACTION_DIR + command + '.mp3', options=" -af 'volume=0.25'")
+        player.start()
+        while not player.is_done():
+            await asyncio.sleep(1)
+        # disconnect after the player has finished
+        player.stop()
+    except Exception as ex:
+        print("예외발생: " + str(ex))
+    finally:
+        await voice.disconnect()
 
 
 async def botutil_vote(argc, argv, client, message):
