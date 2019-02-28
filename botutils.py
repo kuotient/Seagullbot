@@ -73,18 +73,27 @@ async def botutil_reaction(argc, argv, client, message):
         await client.send_message(message.channel, '음성 채팅에 접속해야 이용할 수 있습니다.')
         return
 
-    voice = await client.join_voice_channel(channel)
+    # Step 4. 이미 재생중인지 체크
+    if client.is_voice_connected(channel.server):
+        await client.send_message(message.channel, '현재 재생이 끝난 후 사용해 주세요.')
+        return
+
+    voice = None
     try:
+        voice = await client.join_voice_channel(channel)
         player = voice.create_ffmpeg_player(REACTION_DIR + command + '.mp3', options=" -af 'volume=0.25'")
         player.start()
         while not player.is_done():
             await asyncio.sleep(1)
         # disconnect after the player has finished
         player.stop()
+    except discord.ClientException as ex:
+        await client.send_message(message.channel, '현재 재생이 끝난 후 사용해 주세요.')
     except Exception as ex:
-        print("예외발생: " + str(ex))
+        print(ex)
     finally:
-        await voice.disconnect()
+        if voice is not None:
+            await voice.disconnect()
 
 
 async def botutil_vote(argc, argv, client, message):
