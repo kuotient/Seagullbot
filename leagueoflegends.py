@@ -1,26 +1,73 @@
 import json
 from bs4 import BeautifulSoup
 from riotwatcher import RiotWatcher, ApiError
+import configparser
 
-''' 라이엇 api 를 이용하는데 있어 '인증' 받지 않은 application 은 api 를 하루에 한번씩 갱신해야함. 
-    RiotWatcher 안의 code 가 api 이므로 이용하고 싶을때 갱신하여 쓸 것.'''
 
-watcher = RiotWatcher('RGAPI-52414e05-2faf-4005-877d-073761e2cc2c') # 갱신 필요.
+config = configparser.ConfigParser()
+config.read('./options.ini')
+
+RIOT_TOKEN = config['DEFAULT']['RIOT_TOKEN']
+
+watcher = RiotWatcher(RIOT_TOKEN) # 갱신 필요.
 my_region = 'KR'
 with open('./data/champions.json', encoding='UTF8') as champions:
     champions = json.load(champions)
 
 
-def search(name):
+async def search_stats(argv, argc, client, message):
+    if argc == 1:
+        searching = await client.send_message(message.channel, '아이디를 입력하세요.')
+        msg = await client.wait_for_message(timeout=15.0, author=message.author)
+        if msg is None:
+            await client.delete_message(searching)
+            await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+            return
+
+        player_id = msg.content
+        await client.delete_message(msg)
+
+        searching = await client.edit_message(searching, '검색중입니다...')
+    else:
+        player_id = argv[1]
+        searching = await client.send_message(message.channel, '검색중입니다...')
+
+    #utils.execute_after(client.send_typing, parameters=message.channel, delay=9)
+    await client.send_typing(message.channel)
+
+    summoner = _search(player_id)
+
+    if summoner is None:
+        result = '플레이어를 찾을 수 없습니다.'
+        await client.send_message(message.channel, result)
+        await client.delete_message(searching)
+        return
+
+    else:
+        result = search_stats(ubisoft_id)
+        embed = discord.Embed(title='***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats', description=result+"\n**보다 자세한 정보는 [r6stats](https://r6stats.com/stats/" + ubisoft_id + ")**", color=0x879396)
+        embed.set_thumbnail(url="https://ubisoft-avatars.akamaized.net/" + ubisoft_id + "/default_256_256.png")
+        #embed.set_footer(text=)
+        await client.send_message(message.channel, embed=embed)
+        await client.delete_message(searching)
+
+
+
+
+
+
+
+
+def _search(name):
     summoner = watcher.summoner.by_name(my_region, name)
     try:
         temp = watcher.spectator.by_summoner(my_region, summoner['id'])
         return 1
     except ApiError as err:
         if err.response.status_code == 404:
-            return 0
+            return None
         else:
-            return -1
+            return None
 
 def find_champion_img(name):
     summoner_info_dict = watcher.summoner.by_name(my_region, name)

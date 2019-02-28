@@ -1,18 +1,16 @@
 import leagueoflegends as lol
 import urf
 import discord
-from discord.voice_client import VoiceClient
 import asyncio
 import siege
 import apexlegends as apex
-import nacl
-#import config
 import configparser
+from .config import Config, ConfigDefaults
 
 client = discord.Client()
 
 config = configparser.ConfigParser()
-config.read('./config.ini')
+config.read('./options.ini')
 
 DISCORD_TOKEN = config['DEFAULT']['DISCORD_TOKEN']
 
@@ -125,17 +123,18 @@ async def on_message(message):
 #########   롤 관련 명령어     ##########################################################################
     # !롤전적
     elif argv[0] == COMMAND_LOLSTAT:
-        await client.send_message(message.channel, '아이디를 입력하세요.')
-        msg = await client.wait_for_message(timeout=15.0, author=message.author)
+        if argc == 1:
+            await client.send_message(message.channel, '아이디를 입력하세요.')
+            msg = await client.wait_for_message(timeout=15.0, author=message.author)
 
-        if msg is None:
-            await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
-            return
-        elif msg.content == '항상최선을다해서':
-            embed = discord.Embed(title='함부로 그를 검색하지 마십시오. 경고합니다.',
-                                  description='warning.or.kr',
-                                  color=0x00ff00)
-            await client.send_message(message.channel, embed=embed)            
+            if msg is None:
+                await client.send_message(message.channel, '입력받은 아이디가 없습니다.')
+                return
+            elif msg.content == '항상최선을다해서':
+                embed = discord.Embed(title='함부로 그를 검색하지 마십시오. 경고합니다.',
+                                      description='warning.or.kr',
+                                      color=0x00ff00)
+                await client.send_message(message.channel, embed=embed)
         else:
             embed = discord.Embed(title='최근 전적',
                                   description='[OP.GG](http://www.op.gg/summoner/userName=' + msg.content.replace(" ", "") + ')',

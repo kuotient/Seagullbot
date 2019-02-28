@@ -341,15 +341,15 @@ def search_operator(ubisoft_id):
 
         message = '```'
         message += "플레이어 : {}\n\n".format(stat_json['username'])
-        message += "오퍼".center(8)
-        message += "사살".center(3)
-        message += "사망".center(3)
-        message += "킬뎃".center(2)
-        message += "승리".center(4)
-        message += "패배".center(4)
-        message += "승패".center(4)
-        message += "헤드샷".center(4)
-        message += "플탐".center(4)
+        message += "오퍼".ljust(8)
+        message += "사살".ljust(3)
+        message += "사망".ljust(3)
+        message += "킬뎃".ljust(2)
+        message += "승리".ljust(4)
+        message += "패배".ljust(4)
+        message += "승패".ljust(4)
+        message += "헤드샷".ljust(4)
+        message += "플탐".ljust(4)
         message += "\n\n"
 
         # 상위 5명만 보여준다
