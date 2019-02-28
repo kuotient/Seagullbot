@@ -77,8 +77,13 @@ async def siege_search_operator(argv, argc, client, message):
         return
 
     result = search_operator(ubisoft_id)
-    await client.send_message(message.channel, result)
-    await client.edit_message(searching, '***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats')
+    embed = discord.Embed(title='***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats',
+                          description=result + "\n**보다 자세한 정보는 [r6stats](https://r6stats.com/stats/" + ubisoft_id + "/operators)**",
+                          color=0x879396)
+    embed.set_thumbnail(url="https://ubisoft-avatars.akamaized.net/" + ubisoft_id + "/default_256_256.png")
+    # embed.set_footer(text=)
+    await client.send_message(message.channel, embed=embed)
+    await client.delete_message(searching)
     # await client.delete_message(searching)
     # for result in result_list:
     #     await client.send_message(message.channel, result)
@@ -337,35 +342,43 @@ def search_operator(ubisoft_id):
                 return '처리 중 오류가 발생하였습니다.'
 
         operator_list = stat_json['operators']
+
+        message = ''
+
+        message += "**플레이어** : {}\n\n".format(stat_json['username'])
+
+        # message += "오퍼".center(5)
+
+
+        # 플탐기준 상위 5명만 보여준다
         operator_list = sorted(operator_list, key=lambda operator: operator['playtime'], reverse=True)
-
-        message = '```'
-        message += "플레이어 : {}\n\n".format(stat_json['username'])
-        message += "오퍼".center(8)
-        message += "사살".center(3)
-        message += "사망".center(3)
-        message += "킬뎃".center(2)
-        message += "승리".center(4)
-        message += "패배".center(4)
-        message += "승패".center(4)
-        message += "헤드샷".center(4)
-        message += "플탐".center(4)
-        message += "\n\n"
-
-        # 상위 5명만 보여준다
         for i in range(0, 5):
-            message += operator_list[i]['operator']['name'].ljust(6)
-            message += "{:,}".format(operator_list[i]['kills']).rjust(6)
+            message += "**" + operator_list[i]['operator']['name'].ljust(10) + "**"
+
+            message += '```'
+            message += "사살".rjust(3)
+            message += "사망".rjust(4)
+            message += "킬뎃".rjust(4)
+            #message += "승리".rjust(4)
+            #message += "패배".rjust(4)
+            message += "승패".rjust(4)
+            #message += "헤드샷율".rjust(6)
+            message += "플탐".rjust(7)
+            message += "\n".rjust(7)
+            message += "{:,}".format(operator_list[i]['kills']).rjust(4)
             message += "{:,}".format(operator_list[i]['deaths']).rjust(6)
             message += "{0:.2f}".format(operator_list[i]['kd']).rjust(6)
-            message += "{:,}".format(operator_list[i]['wins']).rjust(6)
-            message += "{:,}".format(operator_list[i]['losses']).rjust(6)
-            message += "{0:.2f}".format(operator_list[i]['wl']).rjust(6) + "\n"
+            #message += "{:,}".format(operator_list[i]['wins']).rjust(5)
+            #message += "{:,}".format(operator_list[i]['losses']).rjust(6)
+            message += "{0:.2f}".format(operator_list[i]['wl']).rjust(6)
+            # message += "{:,}".format(operator_list[i]['headshots']).rjust(5)
+            # message += "{0:.2f}".format(operator_list[i]['headshots'] * 100 / operator_list[i]['kills']).rjust(9)
+            message += str(datetime.datetime.fromtimestamp(operator_list[i]['playtime']).strftime('%dd %Hh %Mm')).rjust(13) + "\n"
             for abilities in operator_list[i]['abilities']:
-                message += (abilities['title'] + ": " + "{:,}".format(abilities['value']) + "\n").rjust(47)
+                message += (abilities['title'] + ": " + "{:,}".format(abilities['value']) + "\n")
             message += "\n"
+            message += '```\n'
 
-        message += '```'
         return message
 
     except Exception as ex:
