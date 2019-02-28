@@ -44,7 +44,7 @@ async def on_message(message):
         await botutils.botutil_clear(client, message)
 
     # !리액션
-    elif argv[0] == COMMAND_REACTION:
+    elif argv[0] == COMMAND_REACTION1 or argv[0] == COMMAND_REACTION2:
         await botutils.botutil_reaction(argc, argv, client, message)
 
     # !투표
