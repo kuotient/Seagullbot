@@ -76,11 +76,11 @@ async def siege_search_operator(argc, argv, client, message):
         await client.delete_message(searching)
         return
 
-    result = search_operator(ubisoft_id)
+    result, operator_image = search_operator(ubisoft_id)
     embed = discord.Embed(title='***:bomb: RAINBOW SIX STATS :bomb:** presented by* r6stats',
                           description=result + "\n**보다 자세한 정보는 [r6stats](https://r6stats.com/stats/" + ubisoft_id + "/operators)**",
                           color=0x879396)
-    embed.set_thumbnail(url="https://ubisoft-avatars.akamaized.net/" + ubisoft_id + "/default_256_256.png")
+    embed.set_thumbnail(url=operator_image)
     # embed.set_footer(text=)
     await client.send_message(message.channel, embed=embed)
     await client.delete_message(searching)
@@ -356,7 +356,7 @@ def search_operator(ubisoft_id):
             message += "**" + operator_list[i]['operator']['name'].ljust(10) + "**"
 
             message += '```'
-            message += "사살".rjust(3)
+            message += "사살".rjust(2)
             message += "사망".rjust(4)
             message += "킬뎃".rjust(4)
             #message += "승리".rjust(4)
@@ -364,8 +364,8 @@ def search_operator(ubisoft_id):
             message += "승률".rjust(4)
             #message += "헤드샷율".rjust(6)
             message += "플탐".rjust(7)
-            message += "\n".rjust(7)
-            message += "{:,}".format(operator_list[i]['kills']).rjust(4)
+            message += "\n".rjust(5)
+            message += "{:,}".format(operator_list[i]['kills']).rjust(3)
             message += "{:,}".format(operator_list[i]['deaths']).rjust(6)
             message += "{0:.2f}".format(operator_list[i]['kd']).rjust(6)
             #message += "{:,}".format(operator_list[i]['wins']).rjust(5)
@@ -373,13 +373,13 @@ def search_operator(ubisoft_id):
             message += "{0:.2f}".format(operator_list[i]['wl']).rjust(6)
             # message += "{:,}".format(operator_list[i]['headshots']).rjust(5)
             # message += "{0:.2f}".format(operator_list[i]['headshots'] * 100 / operator_list[i]['kills']).rjust(9)
-            message += str(datetime.datetime.fromtimestamp(operator_list[i]['playtime']).strftime('%dd %Hh %Mm')).rjust(13) + "\n"
+            message += str(datetime.datetime.fromtimestamp(operator_list[i]['playtime']).strftime('%dd %Hh %Mm')).rjust(12) + "\n"
             for abilities in operator_list[i]['abilities']:
                 message += (abilities['title'] + ": " + "{:,}".format(abilities['value']) + "\n")
             message += "\n"
             message += '```\n'
 
-        return message
+        return message, operator_list[0]['operator']['images']['bust']
 
     except Exception as ex:
         print(ex)
