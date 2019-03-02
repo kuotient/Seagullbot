@@ -18,6 +18,7 @@ COMMAND_CLEAR1 = '!정리'
 COMMAND_CLEAR2 = '!clear'
 COMMAND_VOTE = '!투표'
 COMMAND_TEAM = '!팀나누기'
+COMMAND_JEBI = '!제비뽑기'
 
 
 COMMAND_LIST = [
@@ -34,7 +35,8 @@ COMMAND_LIST = [
     COMMAND_CLEAR1,
     COMMAND_CLEAR2,
     COMMAND_VOTE,
-    COMMAND_TEAM
+    COMMAND_TEAM,
+    COMMAND_JEBI
 ]
 
 HELP_LIST = [
@@ -47,7 +49,8 @@ HELP_LIST = [
     [COMMAND_APEX, '에이펙스 레전드 전적을 보여줍니다.', COMMAND_APEX + ' (아이디)'],
     [COMMAND_REACTION1, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION1 + ' (리스트) or ' + \
                                                                                     COMMAND_REACTION2 + ' (리스트)'],
-    [COMMAND_TEAM, '팀을 나눌 수 있습니다.', COMMAND_TEAM + ' <팀 수>']
+    [COMMAND_TEAM, '팀을 나눌 수 있습니다.', COMMAND_TEAM + ' <팀 수>'],
+    [COMMAND_TEAM, '제비뽑기를 할 수 있습니다.', COMMAND_TEAM + ' <뽑을 사람 수>']
 ]
 
 # VOICE_COMMAND_LIST = [
