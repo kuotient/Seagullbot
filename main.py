@@ -51,6 +51,10 @@ async def on_message(message):
     elif argv[0] == COMMAND_VOTE:
         await botutils.botutil_vote(argc, argv, client, message)
 
+    # !팀나누기
+    elif argv[0] == COMMAND_TEAM:
+        await botutils.botutil_team(argc, argv, client, message)
+
     elif argv[0] == '!끼룩':
         await client.send_message(message.channel, 'https://www.youtube.com/watch?v=m6qWcKLB7Ig')
 

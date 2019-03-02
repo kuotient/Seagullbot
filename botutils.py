@@ -9,10 +9,11 @@ from selenium import webdriver
 import datetime
 from constant import *
 import os
+import random
 
 
 async def botutil_help(client, message):
-    msg = '\n'
+    msg = '※ ()은 선택, <>은 필수입니다.\n'
     for i in range(0, len(HELP_LIST)):
         msg += '**' + HELP_LIST[i][0] + '**\n' + HELP_LIST[i][1] + '\n사용법: `' + HELP_LIST[i][2] + '`\n\n'
     embed = discord.Embed(description= msg,
@@ -115,3 +116,49 @@ async def botutil_vote(argc, argv, client, message):
         for member in reactors:
             if member.name != '갈매기봇':
                 await client.send_message(message.channel, member.name)
+
+
+async def botutil_team(argc, argv, client, message):
+    if argc == 1:
+        await client.send_message(message.channel, '팀 수를 정해주세요.')
+        return
+
+    team_count = int(argv[1])
+    if team_count == 1:
+        await client.send_message(message.channel, '팀 수는 2 이상 가능합니다.')
+        return
+
+    team_no = []
+
+    for i in range(0, team_count):
+        team_no.append([])
+
+    party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
+    msg = await client.wait_for_message(timeout=60.0, author=message.author)
+    if msg is None:
+        await client.delete_message(party)
+        await client.send_message(message.channel, '입력받은 시간 초과입니다.')
+        return
+
+    party_list = msg.content.split(',')
+    team_member_count = int(len(party_list) / team_count)
+
+    for i in range(0, team_count):
+        for j in range(0, team_member_count):
+            random_member = random.choice(party_list)
+            team_no[i].append(random_member)
+            party_list.remove(random_member)
+
+    if len(party_list) is not 0:
+        index = 0
+        while len(party_list) is not 0:
+            team_no[index % team_count].append(party_list[0])
+            party_list.remove(party_list[0])
+            index += 1
+
+    await client.edit_message(party, '팀 나누기 결과 : \n')
+    result_msg = ''
+    for i in range(0, team_count):
+        result_msg += '팀 ' + str(i + 1) + ': ' + str(team_no[i]).replace(' ', '') + '\n'
+
+    await client.send_message(message.channel, result_msg)
