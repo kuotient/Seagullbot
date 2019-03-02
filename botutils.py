@@ -128,19 +128,24 @@ async def botutil_team(argc, argv, client, message):
         await client.send_message(message.channel, '팀 수는 2 이상 가능합니다.')
         return
 
-    team_no = []
+    party_string = ''
+    if argc == 2:
+        team_no = []
 
-    for i in range(0, team_count):
-        team_no.append([])
+        for i in range(0, team_count):
+            team_no.append([])
 
-    party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
-    msg = await client.wait_for_message(timeout=60.0, author=message.author)
-    if msg is None:
+        party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
+        msg = await client.wait_for_message(timeout=60.0, author=message.author)
         await client.delete_message(party)
-        await client.send_message(message.channel, '입력받은 시간 초과입니다.')
-        return
+        if msg is None:
+            await client.send_message(message.channel, '입력받은 시간 초과입니다.')
+            return
+        party_string = msg.content
+    else:
+        party_string = argv[3]
 
-    party_list = msg.content.split(',')
+    party_list = party_string.split(',')
     team_member_count = int(len(party_list) / team_count)
 
     for i in range(0, team_count):
@@ -162,3 +167,37 @@ async def botutil_team(argc, argv, client, message):
         result_msg += '팀 ' + str(i + 1) + ': ' + str(team_no[i]).replace(' ', '') + '\n'
 
     await client.send_message(message.channel, result_msg)
+
+
+async def botutil_jebi(argc, argv, client, message):
+    if argc == 1:
+        await client.send_message(message.channel, '뽑을 사람 수를 정해주세요.')
+        return
+
+    party_string = ''
+    if argc == 2:
+        team_no = []
+
+        party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
+        msg = await client.wait_for_message(timeout=60.0, author=message.author)
+        await client.delete_message(party)
+        if msg is None:
+            await client.send_message(message.channel, '입력받은 시간 초과입니다.')
+            return
+        party_string = msg.content
+    else:
+        party_string = argv[3]
+
+    party_list = party_string.split(',')
+
+    if len(party_list) <= int(argv[1]):
+        await client.send_message(message.channel, '뽑을 사람수와 참여하는 사람수를 확인해주세요.')
+        return
+
+    jebi_list = []
+    for i in range(0, int(argv[1])):
+        jebi_list.append(random.choice(party_list))
+    await client.send_message(message.channel, '뽑힌사람은.. ')
+    await asyncio.sleep(1)
+    await client.send_message(message.channel, str(jebi_list).replace(" ", "") + '!')
+
