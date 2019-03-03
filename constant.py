@@ -50,7 +50,7 @@ HELP_LIST = [
     [COMMAND_REACTION1, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION1 + ' (리스트) or ' + \
                                                                                     COMMAND_REACTION2 + ' (리스트)'],
     [COMMAND_TEAM, '팀을 나눌 수 있습니다.', COMMAND_TEAM + ' <팀 수>'],
-    [COMMAND_TEAM, '제비뽑기를 할 수 있습니다.', COMMAND_TEAM + ' <뽑을 사람 수>']
+    [COMMAND_TEAM, '제비뽑기를 할 수 있습니다.', COMMAND_TEAM + ' (뽑을 사람 수)']
 ]
 
 # VOICE_COMMAND_LIST = [

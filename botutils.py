@@ -170,9 +170,11 @@ async def botutil_team(argc, argv, client, message):
 
 
 async def botutil_jebi(argc, argv, client, message):
+    jebi_count = 0
     if argc == 1:
-        await client.send_message(message.channel, '뽑을 사람 수를 정해주세요.')
-        return
+        jebi_count = 1
+    else:
+        jebi_count = int(argv[1])
 
     party_string = ''
     if argc == 2:
@@ -190,13 +192,15 @@ async def botutil_jebi(argc, argv, client, message):
 
     party_list = party_string.split(',')
 
-    if len(party_list) <= int(argv[1]):
+    if len(party_list) <= jebi_count:
         await client.send_message(message.channel, '뽑을 사람수와 참여하는 사람수를 확인해주세요.')
         return
 
     jebi_list = []
     for i in range(0, int(argv[1])):
-        jebi_list.append(random.choice(party_list))
+        jebi_target = random.choice(party_list)
+        jebi_list.append(jebi_target)
+        party_list.remove(jebi_target)
     await client.send_message(message.channel, '뽑힌사람은.. ')
     await asyncio.sleep(1)
     await client.send_message(message.channel, str(jebi_list).replace(" ", "") + '!')
