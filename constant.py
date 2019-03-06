@@ -1,6 +1,6 @@
 
 ###################### 버전 ################################
-VERSION = 'ver 0.6'
+VERSION = 'ver 0.7'
 ############################################################
 
 #########   명령어 상수 정의     ##########################################################################
@@ -19,6 +19,8 @@ COMMAND_CLEAR2 = '!clear'
 COMMAND_VOTE = '!투표'
 COMMAND_TEAM = '!팀나누기'
 COMMAND_JEBI = '!제비뽑기'
+COMMAND_BOTCTL = '!봇조종'
+COMMAND_BOTSAY = '!봇말'
 
 
 COMMAND_LIST = [
@@ -36,7 +38,9 @@ COMMAND_LIST = [
     COMMAND_CLEAR2,
     COMMAND_VOTE,
     COMMAND_TEAM,
-    COMMAND_JEBI
+    COMMAND_JEBI,
+    COMMAND_BOTCTL,
+    COMMAND_BOTSAY
 ]
 
 HELP_LIST = [
@@ -50,7 +54,7 @@ HELP_LIST = [
     [COMMAND_REACTION1, '보이스챗 리액션을 할 수 있습니다. 자세한 정보는 `!리액션`에서.', COMMAND_REACTION1 + ' (리스트) or ' + \
                                                                                     COMMAND_REACTION2 + ' (리스트)'],
     [COMMAND_TEAM, '팀을 나눌 수 있습니다.', COMMAND_TEAM + ' <팀 수>'],
-    [COMMAND_TEAM, '제비뽑기를 할 수 있습니다.', COMMAND_TEAM + ' <뽑을 사람 수>']
+    [COMMAND_TEAM, '제비뽑기를 할 수 있습니다.', COMMAND_TEAM + ' (뽑을 사람 수)']
 ]
 
 # VOICE_COMMAND_LIST = [

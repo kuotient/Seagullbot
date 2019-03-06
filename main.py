@@ -59,6 +59,15 @@ async def on_message(message):
     elif argv[0] == COMMAND_JEBI:
         await botutils.botutil_jebi(argc, argv, client, message)
 
+    # !봇조종
+    elif argv[0] == COMMAND_BOTCTL:
+        await botutils.botutil_botctl(argc, argv, client, message)
+
+    # !봇말
+    elif argv[0] == COMMAND_BOTSAY:
+        await botutils.botutil_botsay(argc, argv, client, message)
+
+
     elif argv[0] == '!끼룩':
         await client.send_message(message.channel, 'https://www.youtube.com/watch?v=m6qWcKLB7Ig')
 
