@@ -1,6 +1,6 @@
 
 ###################### 버전 ################################
-VERSION = 'ver 0.6'
+VERSION = 'ver 0.7'
 ############################################################
 
 #########   명령어 상수 정의     ##########################################################################
@@ -19,6 +19,8 @@ COMMAND_CLEAR2 = '!clear'
 COMMAND_VOTE = '!투표'
 COMMAND_TEAM = '!팀나누기'
 COMMAND_JEBI = '!제비뽑기'
+COMMAND_BOTCTL = '!봇조종'
+COMMAND_BOTSAY = '!봇말'
 
 
 COMMAND_LIST = [
@@ -36,7 +38,9 @@ COMMAND_LIST = [
     COMMAND_CLEAR2,
     COMMAND_VOTE,
     COMMAND_TEAM,
-    COMMAND_JEBI
+    COMMAND_JEBI,
+    COMMAND_BOTCTL,
+    COMMAND_BOTSAY
 ]
 
 HELP_LIST = [

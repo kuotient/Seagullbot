@@ -16,7 +16,7 @@ async def botutil_help(client, message):
     msg = '※ ()은 선택, <>은 필수입니다.\n'
     for i in range(0, len(HELP_LIST)):
         msg += '**' + HELP_LIST[i][0] + '**\n' + HELP_LIST[i][1] + '\n사용법: `' + HELP_LIST[i][2] + '`\n\n'
-    embed = discord.Embed(description= msg,
+    embed = discord.Embed(description=msg,
                           color=0x00ff00)
     await client.send_message(message.channel, '***ULTIMATE GUIDES for SEAGULLBOT***')
     await client.send_message(message.channel, embed=embed)
@@ -31,7 +31,7 @@ async def botutil_clear(client, message):
                 flag = 1
                 break
 
-        if x.author.display_name == client.user.name or flag == 1:
+        if x.author.id == client.user.id or flag == 1:
             msg_list.append(x)
             if len(msg_list) >= 100:
                 break
@@ -129,12 +129,12 @@ async def botutil_team(argc, argv, client, message):
         return
 
     party_string = ''
+    team_no = []
+
+    for i in range(0, team_count):
+        team_no.append([])
+
     if argc == 2:
-        team_no = []
-
-        for i in range(0, team_count):
-            team_no.append([])
-
         party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
         msg = await client.wait_for_message(timeout=60.0, author=message.author)
         await client.delete_message(party)
@@ -161,7 +161,7 @@ async def botutil_team(argc, argv, client, message):
             party_list.remove(party_list[0])
             index += 1
 
-    await client.edit_message(party, '팀 나누기 결과 : \n')
+    await client.send_message(message.channel, '팀 나누기 결과 : \n')
     result_msg = ''
     for i in range(0, team_count):
         result_msg += '팀 ' + str(i + 1) + ': ' + str(team_no[i]).replace(' ', '') + '\n'
@@ -204,4 +204,43 @@ async def botutil_jebi(argc, argv, client, message):
     await client.send_message(message.channel, '뽑힌사람은.. ')
     await asyncio.sleep(1)
     await client.send_message(message.channel, str(jebi_list).replace(" ", "") + '!')
+
+
+async def botutil_botctl(argc, argv, client, message):
+    if argc != 3:
+        await client.send_message(message.channel, '타겟 설정이 잘못되었습니다. 다시 해주세요.')
+        return
+
+    botctl_dic = {}
+    if os.path.exists('./botctl.json'):
+        with open('botctl.json') as json_file:
+            botctl_dic = json.load(json_file)
+
+    botctl_dic[message.author.id] = [argv[1], argv[2]]
+
+    with open('botctl.json', 'w') as new_file:
+        json.dump(botctl_dic, new_file, ensure_ascii=False, indent='\t')
+
+
+async def botutil_botsay(argc, argv, client, message):
+    botctl_dic = {}
+    if not os.path.exists('./botctl.json'):
+        await client.send_message(message.channel, '먼저 타겟을 설정해야 합니다.')
+        return
+
+    with open('botctl.json') as json_file:
+        botctl_dic = json.load(json_file)
+
+    if message.author.id not in botctl_dic:
+        # !봇조종 <서버ID> <채널ID>
+        await client.send_message(message.channel, '먼저 타겟을 설정해야 합니다.')
+        return
+
+    target_channel = client.get_server(botctl_dic[message.author.id][0]).get_channel(botctl_dic[message.author.id][1])
+    if target_channel is None:
+        await client.send_message(message.channel, '타겟이 잘못되었습니다. 재설정 해주세요.')
+        return
+
+    await client.send_message(target_channel, message.content[message.content.find(' ')+1:])
+
 
