@@ -119,12 +119,13 @@ async def botutil_vote(argc, argv, client, message):
 
 
 async def botutil_team(argc, argv, client, message):
+    team_count = 0
     if argc == 1:
-        await client.send_message(message.channel, '팀 수를 정해주세요.')
-        return
+        team_count = 2
+    else:
+        team_count = int(argv[1])
 
-    team_count = int(argv[1])
-    if team_count == 1:
+    if team_count < 2:
         await client.send_message(message.channel, '팀 수는 2 이상 가능합니다.')
         return
 
@@ -142,6 +143,7 @@ async def botutil_team(argc, argv, client, message):
             await client.send_message(message.channel, '입력받은 시간 초과입니다.')
             return
         party_string = msg.content
+        await client.delete_message(msg)
     else:
         party_string = argv[3]
 
@@ -177,7 +179,7 @@ async def botutil_jebi(argc, argv, client, message):
         jebi_count = int(argv[1])
 
     party_string = ''
-    if argc == 2:
+    if argc <= 2:
         team_no = []
 
         party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
@@ -187,6 +189,7 @@ async def botutil_jebi(argc, argv, client, message):
             await client.send_message(message.channel, '입력받은 시간 초과입니다.')
             return
         party_string = msg.content
+        await client.delete_message(msg)
     else:
         party_string = argv[3]
 
