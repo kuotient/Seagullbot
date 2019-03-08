@@ -224,6 +224,8 @@ async def botutil_botctl(argc, argv, client, message):
     with open('botctl.json', 'w') as new_file:
         json.dump(botctl_dic, new_file, ensure_ascii=False, indent='\t')
 
+    await client.send_message(message.channel, '타겟 설정 완료, 서버 ID: {}, 채널 ID: {}'.format(argv[1], argv[2]))
+
 
 async def botutil_botsay(argc, argv, client, message):
     botctl_dic = {}
@@ -238,12 +240,15 @@ async def botutil_botsay(argc, argv, client, message):
         # !봇조종 <서버ID> <채널ID>
         await client.send_message(message.channel, '먼저 타겟을 설정해야 합니다.')
         return
+    try:
+        target_channel = client.get_server(botctl_dic[message.author.id][0]).get_channel(botctl_dic[message.author.id][1])
+        if target_channel is None:
+            await client.send_message(message.channel, '타겟이 잘못되었습니다. 재설정 해주세요.')
+            return
 
-    target_channel = client.get_server(botctl_dic[message.author.id][0]).get_channel(botctl_dic[message.author.id][1])
-    if target_channel is None:
-        await client.send_message(message.channel, '타겟이 잘못되었습니다. 재설정 해주세요.')
-        return
-
-    await client.send_message(target_channel, message.content[message.content.find(' ')+1:])
+        await client.send_message(target_channel, message.content[message.content.find(' ')+1:])
+    except Exception as ex:
+        print(ex)
+        return '타겟이 잘못되었습니다. 재설정 해주세요.'
 
 
