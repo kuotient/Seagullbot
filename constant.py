@@ -21,6 +21,7 @@ COMMAND_TEAM = '!팀나누기'
 COMMAND_JEBI = '!제비뽑기'
 COMMAND_BOTCTL = '!봇조종'
 COMMAND_BOTSAY = '!봇말'
+COMMAND_REACTION_UPLOAD = '!리액션업로드'
 
 
 COMMAND_LIST = [
@@ -40,7 +41,8 @@ COMMAND_LIST = [
     COMMAND_TEAM,
     COMMAND_JEBI,
     COMMAND_BOTCTL,
-    COMMAND_BOTSAY
+    COMMAND_BOTSAY,
+    COMMAND_REACTION_UPLOAD
 ]
 
 HELP_LIST = [
@@ -61,6 +63,6 @@ HELP_LIST = [
 #     'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers','nope', 'evil', 'ps1'
 # ]
 
-REACTION_DIR = './data/music/'
+REACTION_DEFAULT_DIR = './data/music/default'
 
 ##########################################################################################################

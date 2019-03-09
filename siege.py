@@ -201,8 +201,7 @@ def search_operator(ubisoft_id):
             message += "승률".rjust(4)
             #message += "헤드샷율".rjust(6)
 
-            # timestamp 관련 에러로 임시 주석처리
-            # message += "플탐".rjust(7)
+            message += "플탐".rjust(7)
             message += "\n".rjust(5)
             message += "{:,}".format(operator_list[i]['kills']).rjust(3)
             message += "{:,}".format(operator_list[i]['deaths']).rjust(6)
@@ -213,8 +212,7 @@ def search_operator(ubisoft_id):
             # message += "{:,}".format(operator_list[i]['headshots']).rjust(5)
             # message += "{0:.2f}".format(operator_list[i]['headshots'] * 100 / operator_list[i]['kills']).rjust(9)
 
-            # timestamp 관련 에러로 임시 주석처리
-            # message += str(datetime.datetime.fromtimestamp(operator_list[i]['playtime']).strftime('%dd %Hh %Mm')).rjust(12)
+            message += str(datetime.datetime.fromtimestamp(operator_list[i]['playtime']).strftime('%dd %Hh %Mm')).rjust(12)
             message += '\n'
             for abilities in operator_list[i]['abilities']:
                 message += (abilities['title'] + ": " + "{:,}".format(abilities['value']) + "\n")
