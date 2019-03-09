@@ -43,12 +43,39 @@ async def botutil_clear(client, message):
 #ffmpeg 가 필요하며, ffmpeg 의 bin 폴더를 환경변수 설정해야 합니다.
 async def botutil_reaction(argc, argv, client, message):
     # 먼저 이 함수가 호출되면 디렉토리를 스캔해서 리스트를 만든다
+    # [190308][HKPARK] Default와 자신의 서버 ID의 폴더를 스캔한다. 이때 서버 ID의 폴더가 존재하지 않는다면 생성
+    fid = None
+    music_path_dir = './data/music/' + message.server.id
+    try:
+        if not (os.path.isdir(music_path_dir)):
+            os.makedirs(os.path.join(music_path_dir))
+            filepath = os.path.join(music_path_dir, message.server.name + ".txt")
+            fid = open(filepath, "w")
+            if not os.path.isfile(filepath):
+                fid.write(message.server.name)
+
+    except OSError as e:
+        print('ERROR: ' + str(e))
+    finally:
+        if fid is not None:
+            fid.close()
+
     reaction_list = []
-    file_list = os.listdir(REACTION_DIR)
+    file_list = os.listdir(REACTION_DEFAULT_DIR)
     file_list.sort()
     for reaction in file_list:
         if ".mp3" in reaction:
             reaction_list.append(reaction.replace(".mp3", ""))
+
+    file_list = os.listdir(music_path_dir)
+    file_list.sort()
+    for reaction in file_list:
+        if ".mp3" in reaction:
+            reaction_list.append(reaction.replace(".mp3", ""))
+
+    # 중복제거
+    reaction_list = list(set(reaction_list))
+    reaction_list.sort()
 
     # Step 1. 파라미터 갯수 체크
     if argc == 1:
@@ -81,8 +108,12 @@ async def botutil_reaction(argc, argv, client, message):
 
     voice = None
     try:
+        # [190308][HKPARK] 경로 검사를 먼저 해봐야함; 이게 Default에 있는 음악파일인지 서버 폴더에 있는 파일인지
+        # 만약 둘 다 파일명이 존재하면 서버 폴더 우선
         voice = await client.join_voice_channel(channel)
-        player = voice.create_ffmpeg_player(REACTION_DIR + command + '.mp3', options=" -af 'volume=0.25'")
+        music_path = "{}/{}.mp3".format(music_path_dir, command) if os.path.exists("{}/{}.mp3".format(music_path_dir, command)) \
+                                                            else "{}/{}.mp3".format(REACTION_DEFAULT_DIR, command)
+        player = voice.create_ffmpeg_player(music_path, options=" -af 'volume=0.3'")
         player.start()
         while not player.is_done():
             await asyncio.sleep(1)
@@ -224,6 +255,8 @@ async def botutil_botctl(argc, argv, client, message):
     with open('botctl.json', 'w') as new_file:
         json.dump(botctl_dic, new_file, ensure_ascii=False, indent='\t')
 
+    await client.send_message(message.channel, '타겟 설정 완료, 서버 ID: {}, 채널 ID: {}'.format(argv[1], argv[2]))
+
 
 async def botutil_botsay(argc, argv, client, message):
     botctl_dic = {}
@@ -238,12 +271,52 @@ async def botutil_botsay(argc, argv, client, message):
         # !봇조종 <서버ID> <채널ID>
         await client.send_message(message.channel, '먼저 타겟을 설정해야 합니다.')
         return
+    try:
+        target_channel = client.get_server(botctl_dic[message.author.id][0]).get_channel(botctl_dic[message.author.id][1])
+        if target_channel is None:
+            await client.send_message(message.channel, '타겟이 잘못되었습니다. 재설정 해주세요.')
+            return
 
-    target_channel = client.get_server(botctl_dic[message.author.id][0]).get_channel(botctl_dic[message.author.id][1])
-    if target_channel is None:
-        await client.send_message(message.channel, '타겟이 잘못되었습니다. 재설정 해주세요.')
+        await client.send_message(target_channel, message.content[message.content.find(' ')+1:])
+    except Exception as ex:
+        print(ex)
+        return '타겟이 잘못되었습니다. 재설정 해주세요.'
+
+async def botutil_reaction_upload(argc, argv, client, message):
+    uploadplz = await client.send_message(message.channel, '리액션 mp3를 업로드 하세요.')
+    msg = await client.wait_for_message(timeout=60.0, author=message.author)
+    await client.delete_message(uploadplz)
+
+    if msg is None or len(msg.attachments) == 0:
+        await client.send_message(message.channel, '업로드된 파일이 없습니다.')
         return
 
-    await client.send_message(target_channel, message.content[message.content.find(' ')+1:])
+    url = msg.attachments[0]['url']
+    if url is None or url[-4:] != '.mp3':
+        await client.send_message(message.channel, 'mp3 파일을 업로드 해주세요!')
 
+    file_name = msg.content
+    if file_name is None or len(file_name) == 0:
+        file_name = msg.attachments[0]['filename'].replace('.mp3','')
 
+    # 업로드 전 해당 파일명이 있는지 검사
+    if os.path.exists('.\\data\\music\\'+message.server.id+'\\'+file_name+'.mp3'):
+        await client.send_message(message.channel, '이미 존재하는 파일명입니다.')
+        return
+
+    uploading = await client.send_message(message.channel, '업로드 중..')
+    await download_mp3_file(url, message.server.id, file_name)
+    await client.edit_message(uploading, '업로드가 완료되었습니다.')
+
+async def download_mp3_file(url, path, file_name):
+
+    if not os.path.exists('.\\data\\music\\'+path):
+        os.makedirs('.\\data\\music\\'+path)
+    headers = {
+    'User-agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0'
+    }
+    r = requests.get(url, headers=headers, stream=True)
+    with open('.\\data\\music\\'+path+'\\'+str(file_name)+'.mp3', 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)

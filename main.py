@@ -9,6 +9,7 @@ import nacl
 from constant import *
 import configparser
 import botutils
+import os
 
 client = discord.Client()
 
@@ -25,6 +26,25 @@ async def on_ready():
     print(client.user.id)
     print('-----')
     await client.change_presence(game=discord.Game(name=VERSION))
+
+
+@client.event
+async def on_server_join(server):
+    # [190308][HKPARK] 서버 입장시 data/music/(서버ID) 식으로 폴더 생성한다.
+    try:
+        music_path = './data/music/'+server.id
+        if not (os.path.isdir(music_path)):
+            os.makedirs(os.path.join(music_path))
+            filepath = os.path.join(music_path, server.name + ".txt")
+            fid = open(filepath, "w")
+            if not os.path.isfile(filepath):
+                fid.write(server.name)
+
+            fid.close()
+    except OSError as e:
+        print('ERROR: ' + str(e))
+        return
+
 
 @client.event
 async def on_message(message):
@@ -59,6 +79,8 @@ async def on_message(message):
     elif argv[0] == COMMAND_JEBI:
         await botutils.botutil_jebi(argc, argv, client, message)
 
+################################ 관리자 명령어 ###########################################################
+
     # !봇조종
     elif argv[0] == COMMAND_BOTCTL:
         await botutils.botutil_botctl(argc, argv, client, message)
@@ -67,6 +89,9 @@ async def on_message(message):
     elif argv[0] == COMMAND_BOTSAY:
         await botutils.botutil_botsay(argc, argv, client, message)
 
+    # !리액션업로드
+    elif argv[0] == COMMAND_REACTION_UPLOAD:
+        await botutils.botutil_reaction_upload(argc, argv, client, message)
 
     elif argv[0] == '!끼룩':
         await client.send_message(message.channel, 'https://www.youtube.com/watch?v=m6qWcKLB7Ig')
