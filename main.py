@@ -31,8 +31,9 @@ async def on_ready():
 @client.event
 async def on_server_join(server):
     # [190308][HKPARK] 서버 입장시 data/music/(서버ID) 식으로 폴더 생성한다.
+    # [190313][HKPARK] 폴더 경로를 data/(서버ID)/music 식으로 변경.
     try:
-        music_path = './data/music/'+server.id
+        music_path = MUSIC_DIR_ID_FORMAT.format(server.id)
         if not (os.path.isdir(music_path)):
             os.makedirs(os.path.join(music_path))
             filepath = os.path.join(music_path, server.name + ".txt")
