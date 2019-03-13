@@ -63,6 +63,12 @@ HELP_LIST = [
 #     'airhorn', 'airhorn2', 'sad', 'sad2', 'johncena', 'wow', 'wasted', 'haha', 'cheers','nope', 'evil', 'ps1'
 # ]
 
-REACTION_DEFAULT_DIR = './data/music/default'
+DATA_DIR = './data/'
+
+# .format(id) 와 같이 사용
+DATA_DIR_ID_FORMAT = DATA_DIR + '{}/'
+MUSIC_DIR_ID_FORMAT = DATA_DIR + '{}/music/'
+
+REACTION_DEFAULT_DIR = MUSIC_DIR_ID_FORMAT.format('default')
 
 ##########################################################################################################

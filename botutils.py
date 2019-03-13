@@ -45,7 +45,7 @@ async def botutil_reaction(argc, argv, client, message):
     # 먼저 이 함수가 호출되면 디렉토리를 스캔해서 리스트를 만든다
     # [190308][HKPARK] Default와 자신의 서버 ID의 폴더를 스캔한다. 이때 서버 ID의 폴더가 존재하지 않는다면 생성
     fid = None
-    music_path_dir = './data/music/' + message.server.id
+    music_path_dir = MUSIC_DIR_ID_FORMAT.format(message.server.id)
     try:
         if not (os.path.isdir(music_path_dir)):
             os.makedirs(os.path.join(music_path_dir))
@@ -283,40 +283,47 @@ async def botutil_botsay(argc, argv, client, message):
         return '타겟이 잘못되었습니다. 재설정 해주세요.'
 
 async def botutil_reaction_upload(argc, argv, client, message):
+    music_path = MUSIC_DIR_ID_FORMAT.format(message.server.id)
     uploadplz = await client.send_message(message.channel, '리액션 mp3를 업로드 하세요.')
     msg = await client.wait_for_message(timeout=60.0, author=message.author)
     await client.delete_message(uploadplz)
 
     if msg is None or len(msg.attachments) == 0:
         await client.send_message(message.channel, '업로드된 파일이 없습니다.')
+        if msg is not None:
+            await client.delete_message(msg)
         return
 
     url = msg.attachments[0]['url']
     if url is None or url[-4:] != '.mp3':
         await client.send_message(message.channel, 'mp3 파일을 업로드 해주세요!')
+        await client.delete_message(msg)
+        return
 
     file_name = msg.content
     if file_name is None or len(file_name) == 0:
-        file_name = msg.attachments[0]['filename'].replace('.mp3','')
+        file_name = msg.attachments[0]['filename'].replace('.mp3', '')
 
     # 업로드 전 해당 파일명이 있는지 검사
-    if os.path.exists('.\\data\\music\\'+message.server.id+'\\'+file_name+'.mp3'):
+    if os.path.exists(music_path+'/'+file_name+'.mp3'):
         await client.send_message(message.channel, '이미 존재하는 파일명입니다.')
+        await client.delete_message(msg)
         return
 
     uploading = await client.send_message(message.channel, '업로드 중..')
-    await download_mp3_file(url, message.server.id, file_name)
+    await download_mp3_file(url, music_path, file_name)
+    await client.delete_message(msg)
     await client.edit_message(uploading, '업로드가 완료되었습니다.')
 
 async def download_mp3_file(url, path, file_name):
 
-    if not os.path.exists('.\\data\\music\\'+path):
-        os.makedirs('.\\data\\music\\'+path)
+    if not os.path.exists(path):
+        os.makedirs(path)
     headers = {
     'User-agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0'
     }
     r = requests.get(url, headers=headers, stream=True)
-    with open('.\\data\\music\\'+path+'\\'+str(file_name)+'.mp3', 'wb') as f:
+    with open(path+'/'+str(file_name)+'.mp3', 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
