@@ -166,7 +166,7 @@ async def botutil_team(argc, argv, client, message):
     for i in range(0, team_count):
         team_no.append([])
 
-    if argc == 2:
+    if argc <= 2:
         party = await client.send_message(message.channel, '참여원을 콤마(,)로 구분지어서 적어주세요.(제한시간 1분)')
         msg = await client.wait_for_message(timeout=60.0, author=message.author)
         await client.delete_message(party)
@@ -231,7 +231,7 @@ async def botutil_jebi(argc, argv, client, message):
         return
 
     jebi_list = []
-    for i in range(0, int(argv[1])):
+    for i in range(0, jebi_count):
         jebi_target = random.choice(party_list)
         jebi_list.append(jebi_target)
         party_list.remove(jebi_target)
